@@ -2,4 +2,6 @@
     <string name="app_name">Aganada</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="to_camera_button">toCameraButton</string>
+    <string name="to_wordbook_button">to wordbook button</string>
 </resources>
