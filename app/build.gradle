@@ -8,8 +8,11 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
+        configurations.all {
+            resolutionStrategy { force 'androidx.core:core-ktx:1.6.0' }
+        }
         applicationId "com.example.aganada"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -70,9 +73,9 @@ dependencies {
     // If you want to additionally use the CameraX Lifecycle library
     implementation "androidx.camera:camera-lifecycle:${camerax_version}"
     // If you want to additionally use the CameraX View class
-    implementation "androidx.camera:camera-view:1.0.0-alpha29"
+    implementation "androidx.camera:camera-view:1.0.0-alpha28"
     // If you want to additionally use the CameraX Extensions library
-    implementation "androidx.camera:camera-extensions:1.0.0-alpha29"
+    implementation "androidx.camera:camera-extensions:1.0.0-alpha28"
 
     // Object detection & tracking feature with custom bundled model
     implementation 'com.google.mlkit:object-detection-custom:16.3.3'

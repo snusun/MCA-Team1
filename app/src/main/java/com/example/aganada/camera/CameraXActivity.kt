@@ -1,8 +1,21 @@
 package com.example.aganada.camera
-
+/*
+ * Copyright 2020 Google LLC. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import androidx.lifecycle.ViewModelProvider
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
@@ -14,7 +27,6 @@ import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import android.widget.CompoundButton
-import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.Toast
 import android.widget.ToggleButton
@@ -29,26 +41,26 @@ import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import com.example.aganada.R
 import com.google.android.gms.common.annotation.KeepName
 import com.google.mlkit.common.MlKitException
-import com.google.mlkit.common.model.LocalModel
-import com.example.aganada.camera.CameraXViewModel
+//import com.google.mlkit.vision.demo.VisionImageProcessor
+//import com.google.mlkit.vision.demo.kotlin.objectdetector.ObjectDetectorProcessor
 /*
-import com.google.mlkit.vision.demo.GraphicOverlay
-import com.google.mlkit.vision.demo.R
-import com.google.mlkit.vision.demo.VisionImageProcessor
 import com.google.mlkit.vision.demo.kotlin.barcodescanner.BarcodeScannerProcessor
 import com.google.mlkit.vision.demo.kotlin.facedetector.FaceDetectorProcessor
 import com.google.mlkit.vision.demo.kotlin.labeldetector.LabelDetectorProcessor
-import com.google.mlkit.vision.demo.kotlin.objectdetector.ObjectDetectorProcessor
 import com.google.mlkit.vision.demo.kotlin.posedetector.PoseDetectorProcessor
 import com.google.mlkit.vision.demo.kotlin.segmenter.SegmenterProcessor
 import com.google.mlkit.vision.demo.kotlin.textdetector.TextRecognitionProcessor
-import com.google.mlkit.vision.demo.preference.PreferenceUtils
-import com.google.mlkit.vision.demo.preference.SettingsActivity
-import com.google.mlkit.vision.demo.preference.SettingsActivity.LaunchSource
-import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
-import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
+*/
+
+//import com.google.mlkit.vision.demo.preference.PreferenceUtils
+//import com.google.mlkit.vision.demo.preference.SettingsActivity
+//import com.google.mlkit.vision.demo.preference.SettingsActivity.LaunchSource
+//import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
+//import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
+/*
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
 import com.google.mlkit.vision.text.devanagari.DevanagariTextRecognizerOptions
 import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
@@ -108,6 +120,7 @@ class CameraXActivity :
         options.add(OBJECT_DETECTION)
         options.add(OBJECT_DETECTION_CUSTOM)
         options.add(CUSTOM_AUTOML_OBJECT_DETECTION)
+        /*
         options.add(FACE_DETECTION)
         options.add(BARCODE_SCANNING)
         options.add(IMAGE_LABELING)
@@ -120,6 +133,8 @@ class CameraXActivity :
         options.add(TEXT_RECOGNITION_DEVANAGARI)
         options.add(TEXT_RECOGNITION_JAPANESE)
         options.add(TEXT_RECOGNITION_KOREAN)
+        */
+
 
         // Creating adapter for spinner
         val dataAdapter = ArrayAdapter(this, R.layout.spinner_style, options)
@@ -128,8 +143,8 @@ class CameraXActivity :
         // attaching data adapter to spinner
         spinner.adapter = dataAdapter
         spinner.onItemSelectedListener = this
-        val facingSwitch = findViewById<ToggleButton>(R.id.facing_switch)
-        facingSwitch.setOnCheckedChangeListener(this)
+        //val facingSwitch = findViewById<ToggleButton>(R.id.facing_switch)
+        //facingSwitch.setOnCheckedChangeListener(this)
         ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(application))
             .get(CameraXViewModel::class.java)
             .processCameraProvider
@@ -143,12 +158,13 @@ class CameraXActivity :
                 }
             )
 
+        /*
         val settingsButton = findViewById<ImageView>(R.id.settings_button)
         settingsButton.setOnClickListener {
             val intent = Intent(applicationContext, SettingsActivity::class.java)
             intent.putExtra(SettingsActivity.EXTRA_LAUNCH_SOURCE, LaunchSource.CAMERAX_LIVE_PREVIEW)
             startActivity(intent)
-        }
+        }*/
 
         if (!allPermissionsGranted()) {
             runtimePermissions
@@ -259,13 +275,15 @@ class CameraXActivity :
         if (imageProcessor != null) {
             imageProcessor!!.stop()
         }
+        /*
         imageProcessor =
             try {
                 when (selectedModel) {
+
                     OBJECT_DETECTION -> {
                         Log.i(TAG, "Using Object Detector Processor")
                         val objectDetectorOptions = PreferenceUtils.getObjectDetectorOptionsForLivePreview(this)
-                        ObjectDetectorProcessor(this, objectDetectorOptions)
+                        //ObjectDetectorProcessor(this, objectDetectorOptions)
                     }
                     OBJECT_DETECTION_CUSTOM -> {
                         Log.i(TAG, "Using Custom Object Detector (with object labeler) Processor")
@@ -273,7 +291,7 @@ class CameraXActivity :
                             LocalModel.Builder().setAssetFilePath("custom_models/object_labeler.tflite").build()
                         val customObjectDetectorOptions =
                             PreferenceUtils.getCustomObjectDetectorOptionsForLivePreview(this, localModel)
-                        ObjectDetectorProcessor(this, customObjectDetectorOptions)
+                        //ObjectDetectorProcessor(this, customObjectDetectorOptions)
                     }
                     CUSTOM_AUTOML_OBJECT_DETECTION -> {
                         Log.i(TAG, "Using Custom AutoML Object Detector Processor")
@@ -284,8 +302,9 @@ class CameraXActivity :
                                 this,
                                 customAutoMLODTLocalModel
                             )
-                        ObjectDetectorProcessor(this, customAutoMLODTOptions)
+                        //ObjectDetectorProcessor(this, customAutoMLODTOptions)
                     }
+                    /*
                     TEXT_RECOGNITION_LATIN -> {
                         Log.i(TAG, "Using on-device Text recognition Processor for Latin")
                         TextRecognitionProcessor(this, TextRecognizerOptions.Builder().build())
@@ -355,6 +374,7 @@ class CameraXActivity :
                         )
                     }
                     SELFIE_SEGMENTATION -> SegmenterProcessor(this)
+                    */
                     else -> throw IllegalStateException("Invalid model name")
                 }
             } catch (e: Exception) {
@@ -366,7 +386,7 @@ class CameraXActivity :
                 )
                     .show()
                 return
-            }
+            }*/
 
         val builder = ImageAnalysis.Builder()
         val targetResolution = PreferenceUtils.getCameraXTargetResolution(this, lensFacing)
@@ -462,6 +482,7 @@ class CameraXActivity :
         private const val OBJECT_DETECTION = "Object Detection"
         private const val OBJECT_DETECTION_CUSTOM = "Custom Object Detection"
         private const val CUSTOM_AUTOML_OBJECT_DETECTION = "Custom AutoML Object Detection (Flower)"
+        /*
         private const val FACE_DETECTION = "Face Detection"
         private const val TEXT_RECOGNITION_LATIN = "Text Recognition Latin"
         private const val TEXT_RECOGNITION_CHINESE = "Text Recognition Chinese"
@@ -474,6 +495,7 @@ class CameraXActivity :
         private const val CUSTOM_AUTOML_LABELING = "Custom AutoML Image Labeling (Flower)"
         private const val POSE_DETECTION = "Pose Detection"
         private const val SELFIE_SEGMENTATION = "Selfie Segmentation"
+        */
 
         private const val STATE_SELECTED_MODEL = "selected_model"
 
