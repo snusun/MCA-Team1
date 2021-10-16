@@ -1,5 +1,6 @@
 package com.example.aganada.camera
 
+//import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
 import android.content.Context
 import android.os.Build.VERSION_CODES
 import android.preference.PreferenceManager
@@ -8,6 +9,10 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.camera.core.CameraSelector
 import com.example.aganada.R
+import com.google.mlkit.common.model.LocalModel
+import com.google.mlkit.vision.objects.ObjectDetectorOptionsBase
+import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions
+
 //import com.google.common.base.Preconditions
 /*
 import com.google.mlkit.common.model.LocalModel
@@ -119,14 +124,14 @@ object PreferenceUtils {
             return null
         }
     }
-    /*
+
 
     fun shouldHideDetectionInfo(context: Context): Boolean {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
         val prefKey = context.getString(R.string.pref_key_info_hide)
         return sharedPreferences.getBoolean(prefKey, false)
     }
-
+    /*
     fun getObjectDetectorOptionsForStillImage(context: Context?): ObjectDetectorOptions {
         return com.google.mlkit.vision.demo.preference.PreferenceUtils.getObjectDetectorOptions(
             context,
@@ -136,20 +141,27 @@ object PreferenceUtils {
         )
     }
 
+     */
+
+
+
+    /*
     fun getObjectDetectorOptionsForLivePreview(context: Context?): ObjectDetectorOptions {
-        return com.google.mlkit.vision.demo.preference.PreferenceUtils.getObjectDetectorOptions(
-            context,
-            R.string.pref_key_live_preview_object_detector_enable_multiple_objects,
-            R.string.pref_key_live_preview_object_detector_enable_classification,
-            ObjectDetectorOptions.STREAM_MODE
-        )
+        return context?.let {
+            getObjectDetectorOptions(
+                it,
+                R.string.pref_key_live_preview_object_detector_enable_multiple_objects,
+                R.string.pref_key_live_preview_object_detector_enable_classification,
+                ObjectDetectorOptions.STREAM_MODE
+            )
+        }
     }
 
     private fun getObjectDetectorOptions(
         context: Context,
         @StringRes prefKeyForMultipleObjects: Int,
         @StringRes prefKeyForClassification: Int,
-        @DetectorMode mode: Int
+        @ObjectDetectorOptionsBase.DetectorMode mode: Int
     ): ObjectDetectorOptions {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
         val enableMultipleObjects =
@@ -165,6 +177,9 @@ object PreferenceUtils {
         }
         return builder.build()
     }
+    */
+
+    /*
 
     fun getCustomObjectDetectorOptionsForStillImage(
         context: Context?, localModel: LocalModel?
@@ -178,24 +193,43 @@ object PreferenceUtils {
         )
     }
 
+
+     */
+
     fun getCustomObjectDetectorOptionsForLivePreview(
         context: Context?, localModel: LocalModel?
-    ): CustomObjectDetectorOptions {
-        return com.google.mlkit.vision.demo.preference.PreferenceUtils.getCustomObjectDetectorOptions(
-            context,
-            localModel,
+    ): CustomObjectDetectorOptions? {
+        return getCustomObjectDetectorOptions(
+            context!!,
+            localModel!!,
             R.string.pref_key_live_preview_object_detector_enable_multiple_objects,
             R.string.pref_key_live_preview_object_detector_enable_classification,
             CustomObjectDetectorOptions.STREAM_MODE
         )
     }
-
+    /*
+    fun getCustomObjectDetectorOptionsForLivePreview(
+        context: Context?, localModel: LocalModel?
+    ): Unit? {
+        return context?.let {
+            if (localModel != null) {
+                getCustomObjectDetectorOptions(
+                    it,
+                    localModel,
+                    R.string.pref_key_live_preview_object_detector_enable_multiple_objects,
+                    R.string.pref_key_live_preview_object_detector_enable_classification,
+                    CustomObjectDetectorOptions.STREAM_MODE
+                )
+            }
+        }
+    }*/
+    
     private fun getCustomObjectDetectorOptions(
         context: Context,
         localModel: LocalModel,
         @StringRes prefKeyForMultipleObjects: Int,
         @StringRes prefKeyForClassification: Int,
-        @DetectorMode mode: Int
+        @ObjectDetectorOptionsBase.DetectorMode mode: Int
     ): CustomObjectDetectorOptions {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
         val enableMultipleObjects =
@@ -211,6 +245,8 @@ object PreferenceUtils {
         }
         return builder.build()
     }
+    
+     /*
 
     fun getFaceDetectorOptions(context: Context): FaceDetectorOptions {
         val landmarkMode: Int =
