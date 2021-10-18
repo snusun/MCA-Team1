@@ -13,6 +13,7 @@ import com.example.aganada.R
 import com.example.aganada.databinding.FragmentCameraBinding
 import com.example.aganada.databinding.FragmentLearnBinding
 import com.example.aganada.databinding.FragmentWordBookBinding
+import kotlinx.android.synthetic.main.fragment_word_book.*
 
 class WordBookFragment : Fragment() {
     private var _binding: FragmentWordBookBinding? = null
