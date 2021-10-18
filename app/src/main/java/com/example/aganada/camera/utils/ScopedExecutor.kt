@@ -1,4 +1,4 @@
-package com.example.aganada.objectDetector
+package com.example.aganada.camera.utils
 
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean

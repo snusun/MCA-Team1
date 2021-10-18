@@ -1,4 +1,4 @@
-package com.example.aganada.camera;
+package com.example.aganada.camera.utils;
 
 import android.graphics.Bitmap;
 import android.os.Build;

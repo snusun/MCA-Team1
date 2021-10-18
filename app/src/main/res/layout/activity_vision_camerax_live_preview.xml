@@ -14,7 +14,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/control"/>
 
-    <com.example.aganada.camera.GraphicOverlay
+    <com.example.aganada.camera.utils.GraphicOverlay
         android:id="@+id/graphic_overlay"
         android:layout_width="0dp"
         android:layout_height="0dp"

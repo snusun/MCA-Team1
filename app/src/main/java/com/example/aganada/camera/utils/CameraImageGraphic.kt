@@ -1,8 +1,8 @@
-package com.example.aganada.objectDetector
+package com.example.aganada.camera.utils
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import com.example.aganada.camera.GraphicOverlay
+import com.example.aganada.camera.utils.GraphicOverlay
 
 /*
 * Copyright 2020 Google LLC. All rights reserved.

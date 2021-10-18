@@ -32,13 +32,13 @@ class CameraXViewModel
                         } catch (e: ExecutionException) {
                             // Handle any errors (including cancellation) here.
                             Log.e(
-                                com.example.aganada.camera.CameraXViewModel.Companion.TAG,
+                                TAG,
                                 "Unhandled exception",
                                 e
                             )
                         } catch (e: InterruptedException) {
                             Log.e(
-                                com.example.aganada.camera.CameraXViewModel.Companion.TAG,
+                                TAG,
                                 "Unhandled exception",
                                 e
                             )

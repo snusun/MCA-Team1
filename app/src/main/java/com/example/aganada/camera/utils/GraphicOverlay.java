@@ -1,4 +1,4 @@
-package com.example.aganada.camera;
+package com.example.aganada.camera.utils;
 
 /*
  * Copyright 2020 Google LLC. All rights reserved.

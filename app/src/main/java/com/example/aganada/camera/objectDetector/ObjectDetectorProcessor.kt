@@ -1,4 +1,4 @@
-package com.example.aganada.objectDetector
+package com.example.aganada.camera.objectDetector
 
 /*
  * Copyright 2020 Google LLC. All rights reserved.
@@ -18,7 +18,8 @@ package com.example.aganada.objectDetector
 
 import android.content.Context
 import android.util.Log
-import com.example.aganada.camera.GraphicOverlay
+import com.example.aganada.camera.utils.GraphicOverlay
+import com.example.aganada.camera.utils.VisionProcessorBase
 import com.google.android.gms.tasks.Task
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.objects.DetectedObject

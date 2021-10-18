@@ -1,4 +1,4 @@
-package com.example.aganada.objectDetector
+package com.example.aganada.camera.utils
 
 import android.annotation.TargetApi
 import android.content.ContentResolver
@@ -12,7 +12,6 @@ import androidx.annotation.RequiresApi
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageProxy
 import androidx.exifinterface.media.ExifInterface
-import com.example.aganada.camera.FrameMetadata
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.nio.ByteBuffer

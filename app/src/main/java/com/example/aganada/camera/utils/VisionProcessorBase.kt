@@ -1,4 +1,4 @@
-package com.example.aganada.objectDetector
+package com.example.aganada.camera.utils
 /*
  * Copyright 2020 Google LLC. All rights reserved.
  *
@@ -26,10 +26,6 @@ import androidx.annotation.GuardedBy
 import androidx.annotation.RequiresApi
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageProxy
-import com.example.aganada.camera.FrameMetadata
-import com.example.aganada.camera.GraphicOverlay
-import com.example.aganada.camera.PreferenceUtils
-import com.example.aganada.camera.VisionImageProcessor
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
@@ -112,7 +108,8 @@ abstract class VisionProcessorBase<T>(context: Context) : VisionImageProcessor {
 
     // -----------------Code for processing single still image----------------------------------------
     override fun processBitmap(bitmap: Bitmap?, graphicOverlay:
-    GraphicOverlay) {
+    GraphicOverlay
+    ) {
         val frameStartMs = SystemClock.elapsedRealtime()
 
         if (isMlImageEnabled(graphicOverlay.context)) {
@@ -227,8 +224,8 @@ abstract class VisionProcessorBase<T>(context: Context) : VisionImageProcessor {
             requestDetectInImage(
                 mlImage,
                 graphicOverlay,
-                /* originalCameraImage= */ bitmap,
-                /* shouldShowFps= */ true,
+                bitmap,
+                true,
                 frameStartMs
             )
                 // When the image is from CameraX analysis use case, must call image.close() on received
@@ -244,8 +241,8 @@ abstract class VisionProcessorBase<T>(context: Context) : VisionImageProcessor {
         requestDetectInImage(
             InputImage.fromMediaImage(image.image!!, image.imageInfo.rotationDegrees),
             graphicOverlay,
-            /* originalCameraImage= */ bitmap,
-            /* shouldShowFps= */ true,
+            bitmap,
+            true,
             frameStartMs
         )
             // When the image is from CameraX analysis use case, must call image.close() on received
