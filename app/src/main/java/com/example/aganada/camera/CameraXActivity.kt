@@ -87,7 +87,7 @@ class CameraXActivity :
     private var analysisUseCase: ImageAnalysis? = null
     private var imageProcessor: VisionImageProcessor? = null
     private var needUpdateGraphicOverlayImageSourceInfo = false
-    private var selectedModel = OBJECT_DETECTION
+    private var selectedModel = OBJECT_DETECTION_CUSTOM
     private var lensFacing = CameraSelector.LENS_FACING_BACK
     private var cameraSelector: CameraSelector? = null
 
@@ -95,7 +95,7 @@ class CameraXActivity :
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate")
         if (savedInstanceState != null) {
-            selectedModel = savedInstanceState.getString(STATE_SELECTED_MODEL, OBJECT_DETECTION)
+            selectedModel = savedInstanceState.getString(STATE_SELECTED_MODEL, OBJECT_DETECTION_CUSTOM)
         }
         cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
         setContentView(R.layout.activity_vision_camerax_live_preview)
@@ -107,17 +107,7 @@ class CameraXActivity :
         if (graphicOverlay == null) {
             Log.d(TAG, "graphicOverlay is null")
         }
-        val spinner = findViewById<Spinner>(R.id.spinner)
-        val options: MutableList<String> = ArrayList()
-        options.add(OBJECT_DETECTION_CUSTOM)
 
-        // Creating adapter for spinner
-        val dataAdapter = ArrayAdapter(this, R.layout.spinner_style, options)
-        // Drop down layout style - list view with radio button
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        // attaching data adapter to spinner
-        spinner.adapter = dataAdapter
-        spinner.onItemSelectedListener = this
         ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(application))
             .get(CameraXViewModel::class.java)
             .processCameraProvider

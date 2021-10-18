@@ -48,7 +48,7 @@ object PreferenceUtils {
     fun shouldHideDetectionInfo(context: Context): Boolean {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
         val prefKey = context.getString(R.string.pref_key_info_hide)
-        return sharedPreferences.getBoolean(prefKey, false)
+        return sharedPreferences.getBoolean(prefKey, true)
     }
 
     fun getCustomObjectDetectorOptionsForLivePreview(
