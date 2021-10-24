@@ -17,6 +17,7 @@ package com.example.aganada.camera
 import androidx.lifecycle.ViewModelProvider
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -29,11 +30,7 @@ import android.widget.CompoundButton
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.camera.core.CameraInfoUnavailableException
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
@@ -47,6 +44,11 @@ import com.example.aganada.camera.utils.VisionImageProcessor
 import com.google.android.gms.common.annotation.KeepName
 import com.google.mlkit.common.MlKitException
 import com.google.mlkit.common.model.LocalModel
+import kotlinx.android.synthetic.main.activity_vision_camerax_live_preview.*
+import java.io.File
+import java.net.URI
+import java.text.SimpleDateFormat
+import java.util.*
 //import com.google.mlkit.vision.demo.VisionImageProcessor
 /*
 import com.google.mlkit.vision.demo.kotlin.barcodescanner.BarcodeScannerProcessor
@@ -69,7 +71,6 @@ import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 */
-import java.util.ArrayList
 
 /** Live preview demo app for ML Kit APIs using CameraX. */
 @KeepName
@@ -84,12 +85,14 @@ class CameraXActivity :
     private var graphicOverlay: GraphicOverlay? = null
     private var cameraProvider: ProcessCameraProvider? = null
     private var previewUseCase: Preview? = null
+    private var captureUseCase: ImageCapture? = null
     private var analysisUseCase: ImageAnalysis? = null
     private var imageProcessor: VisionImageProcessor? = null
     private var needUpdateGraphicOverlayImageSourceInfo = false
     private var selectedModel = OBJECT_DETECTION_CUSTOM
     private var lensFacing = CameraSelector.LENS_FACING_BACK
     private var cameraSelector: CameraSelector? = null
+    private lateinit var outputDirectory: File
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -107,6 +110,9 @@ class CameraXActivity :
         if (graphicOverlay == null) {
             Log.d(TAG, "graphicOverlay is null")
         }
+        camera_capture_button.setOnClickListener { takePhoto() }
+        outputDirectory = getOutputDirectory()
+
 
         ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(application))
             .get(CameraXViewModel::class.java)
@@ -124,6 +130,46 @@ class CameraXActivity :
         if (!allPermissionsGranted()) {
             runtimePermissions
         }
+    }
+
+    private fun getOutputDirectory(): File{
+        // TODO: change the following to MediaStore
+        val mediaDir = externalMediaDirs.firstOrNull()?.let {
+            File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
+        }
+
+        return if (mediaDir != null && mediaDir.exists()) mediaDir
+               else filesDir
+    }
+
+    private fun takePhoto(){
+        Log.d(TAG, "takePhoto")
+        // reference to captureUseCase. If null, end function
+        val imageCapture = captureUseCase ?: return
+
+        // create file to hold image
+        // TODO: change name to hold detected object
+        val photoFile = File(
+            outputDirectory,
+            SimpleDateFormat(FILENAME_FORMAT, Locale.US
+            ).format(System.currentTimeMillis()) + ".jpg")
+
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+        imageCapture.takePicture(
+            outputOptions, ContextCompat.getMainExecutor(this), object : ImageCapture.OnImageSavedCallback {
+                override fun onError(exception: ImageCaptureException) {
+                    Log.e(TAG, "${exception.message}")
+                }
+
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    Log.d(TAG, "onImageSaved")
+                    val savedUrl = Uri.fromFile(photoFile)  // outputFileResults.savedUri
+                    val msg = "Image saved to $savedUrl"
+                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
     }
 
     override fun onSaveInstanceState(bundle: Bundle) {
@@ -191,10 +237,12 @@ class CameraXActivity :
     }
 
     private fun bindAllCameraUseCases() {
+        Log.d(TAG, "bindAllCameraUseCases")
         if (cameraProvider != null) {
             // As required by CameraX API, unbinds all use cases before trying to re-bind any of them.
             cameraProvider!!.unbindAll()
             bindPreviewUseCase()
+            bindCaptureUseCase()
             bindAnalysisUseCase()
         }
     }
@@ -218,6 +266,24 @@ class CameraXActivity :
         previewUseCase = builder.build()
         previewUseCase!!.setSurfaceProvider(previewView!!.getSurfaceProvider())
         cameraProvider!!.bindToLifecycle( this, cameraSelector!!, previewUseCase)
+    }
+
+    private fun bindCaptureUseCase(){
+        if (cameraProvider == null) {
+            return
+        }
+        if (captureUseCase != null) {
+            cameraProvider!!.unbind(captureUseCase)
+        }
+
+        val builder = ImageCapture.Builder()
+        val targetResolution = PreferenceUtils.getCameraXTargetResolution(this, lensFacing)
+        if (targetResolution != null) {
+            builder.setTargetResolution(targetResolution)
+        }
+        captureUseCase = builder.build()
+        cameraProvider!!.bindToLifecycle( this, cameraSelector!!, captureUseCase)
+        Log.d(TAG, "bindCaptureUseCase")
     }
 
     private fun bindAnalysisUseCase() {
@@ -282,6 +348,7 @@ class CameraXActivity :
                 try {
                     // !! -> ?
                     imageProcessor?.processImageProxy(imageProxy, graphicOverlay)
+
                 } catch (e: MlKitException) {
                     Log.e(TAG, "Failed to process image. Error: " + e.localizedMessage)
                     Toast.makeText(applicationContext, e.localizedMessage, Toast.LENGTH_SHORT).show()
@@ -350,6 +417,7 @@ class CameraXActivity :
         private const val OBJECT_DETECTION = "Object Detection"
         private const val OBJECT_DETECTION_CUSTOM = "Custom Object Detection"
         private const val STATE_SELECTED_MODEL = "selected_model"
+        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
 
         private fun isPermissionGranted(context: Context, permission: String?): Boolean {
             if (ContextCompat.checkSelfPermission(context, permission!!) ==
