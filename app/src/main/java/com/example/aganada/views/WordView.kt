@@ -2,16 +2,17 @@ package com.example.aganada.views
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Path
+import android.graphics.*
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
+import android.graphics.PointF
+import kotlin.math.atan2
+import kotlin.math.pow
+import kotlin.math.sqrt
+
 
 class WordView @JvmOverloads constructor(
     context: Context,
@@ -24,6 +25,8 @@ class WordView @JvmOverloads constructor(
     private var padding: Float = 0f
     private var heightSize: Int = 0
     private var widthSize: Int = 0
+    private var eraseSize: Float = 0f
+    private var lineWidth: Float = 0f
 
     var word = ""
     set(value) {
@@ -33,14 +36,14 @@ class WordView @JvmOverloads constructor(
 
     private val drawOpStack = mutableListOf<DrawOp>()
     private val undoStack = mutableListOf<DrawOp>()
-
-    private val pathSet = mutableSetOf<Path>()
-
-    private var removingList: MutableList<Path>? = null
+    private val pathSet = mutableSetOf<PathData>()
+    private var removingList: MutableList<PathData>? = null
 
     var drawMode: DrawMode = DrawMode.PENCIL
 
-    private var path: Path? = null
+    private var path: PathData? = null
+    private var eraserPath: Path? = null
+    private var eraserPoint: PointF? = null
 
     fun unDo() {
         val op = drawOpStack.removeLastOrNull()
@@ -66,59 +69,69 @@ class WordView @JvmOverloads constructor(
         invalidate()
     }
 
-    private fun convertDpToPixel(dp: Float, context: Context): Float {
-        return dp * (context.resources.displayMetrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)
-    }
-
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (drawMode == DrawMode.PENCIL) {
+            eraserPoint = null
             when (event.action) {
                 MotionEvent.ACTION_DOWN ->
-                    path = Path().also {
-                        it.moveTo(event.x, event.y)
+                    path = PathData(event.x, event.y).also {
                         drawOpStack.add(DrawOp(DrawOpType.PENCIL, listOf(it)))
                         pathSet.add(it)
                         undoStack.clear()
                     }
-                MotionEvent.ACTION_MOVE ->
+
+                MotionEvent.ACTION_MOVE -> {
                     path?.lineTo(event.x, event.y)
+                }
+
                 else -> {
                 }
             }
         } else if (drawMode == DrawMode.ERASER) {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    path = Path().also {
-                        it.moveTo(event.x, event.y)
-                    }
+                    eraserPath = Path()
+                    eraserPath?.fillType = Path.FillType.WINDING
+                    eraserPath?.moveTo(event.x, event.y)
+                    eraserPoint = PointF(event.x, event.y)
                     undoStack.clear()
                     removingList = mutableListOf()
                 }
 
                 MotionEvent.ACTION_MOVE -> {
-                    path?.lineTo(event.x, event.y)
-                    val erasePath = path ?: return true
-                    val removeList = pathSet.filter { p ->
-                        val interPath = Path()
-                        interPath.op(p, erasePath, Path.Op.INTERSECT)
-                        return@filter !interPath.isEmpty
+                    val eraserPath = eraserPath?: return false
+                    eraserPath.apply {
+                        lineTo(event.x, event.y)
+                        addCircle(event.x, event.y, eraseSize, Path.Direction.CW)
+                        val removeList = pathSet.filter { p ->
+                            val interPath = Path()
+                            interPath.op(p.roundPath, eraserPath, Path.Op.INTERSECT)
+                            return@filter !interPath.isEmpty
+                        }
+                        pathSet.removeAll(removeList)
+                        removingList?.addAll(removeList)
+                        reset()
+                        moveTo(event.x, event.y)
                     }
-                    this.pathSet.removeAll(removeList)
-                    removingList?.addAll(removeList)
+                    eraserPoint?.set(event.x, event.y)
                 }
 
                 MotionEvent.ACTION_UP -> {
-                    val erasePath = path ?: return true
+                    val eraserPath = eraserPath ?: return true
                     val removeList = pathSet.filter { p ->
                         val interPath = Path()
-                        interPath.op(p, erasePath, Path.Op.INTERSECT)
+                        interPath.op(p.roundPath, eraserPath, Path.Op.INTERSECT)
                         return@filter !interPath.isEmpty
                     }
+                    eraserPoint = null
+                    this.eraserPath = null
                     this.pathSet.removeAll(removeList)
                     val removingList = removingList?: return true
                     removingList.addAll(removeList)
-                    drawOpStack.add(DrawOp(DrawOpType.ERASER, removingList))
+                    if (removeList.isNotEmpty()) {
+                        drawOpStack.add(DrawOp(DrawOpType.ERASER, removingList))
+                    }
                 }
                 else -> {
                 }
@@ -130,14 +143,15 @@ class WordView @JvmOverloads constructor(
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
+//        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
         widthSize = MeasureSpec.getSize(widthMeasureSpec)
-        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+//        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         heightSize = MeasureSpec.getSize(heightMeasureSpec)
         centerX = (widthSize / 2).toFloat()
         centerY = (heightSize / 2).toFloat()
         padding = convertDpToPixel(16f, context)
-
+        eraseSize = convertDpToPixel(8f, context)
+        lineWidth = convertDpToPixel(4f, context)
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -157,7 +171,7 @@ class WordView @JvmOverloads constructor(
 
             paint.color = Color.parseColor("#44000000")
             paint.style = Paint.Style.STROKE
-            paint.strokeWidth = 10f
+            paint.strokeWidth = lineWidth
             canvas.drawText(word, textX, textY, paint)
         }
 
@@ -165,18 +179,68 @@ class WordView @JvmOverloads constructor(
         run {
             paint.color = Color.BLACK
             paint.style = Paint.Style.STROKE
-            paint.strokeWidth = 10f
+            paint.strokeWidth = lineWidth
 
             pathSet.forEach { p ->
-                canvas.drawPath(p, paint)
+                canvas.drawPath(p.rawPath, paint)
             }
+        }
 
+        /* draw Eraser */
+        run {
+            if (drawMode == DrawMode.ERASER) {
+                eraserPoint?.let{
+                    paint.color = Color.argb(33, 0, 0, 0)
+                    paint.strokeWidth = 1f
+                    paint.style = Paint.Style.FILL
+                    canvas.drawCircle(it.x, it.y, eraseSize, paint)
+                    eraserPath?.let { it1 -> canvas.drawPath(it1, paint) }
+                }
+            }
+        }
+    }
+
+    inner class PathData(x: Float, y: Float) {
+        val rawPath: Path = Path()
+        val roundPath: Path = Path()
+        private val lastPoint: PointF = PointF()
+        private val matrix: Matrix = Matrix()
+
+        init {
+            rawPath.moveTo(x, y)
+            roundPath.moveTo(x, y)
+            lastPoint.set(x, y)
+        }
+
+        fun lineTo(x: Float, y: Float) {
+            rawPath.lineTo(x, y)
+            val degree = angleOf(lastPoint, PointF(x, y))
+            val midX = (lastPoint.x + x)/2
+            val midY = (lastPoint.y + y)/2
+            val halfWidth = convertDpToPixel(2f, context)
+            val halfLength = sqrt((lastPoint.x - x).pow(2) + (lastPoint.y - y).pow(2)) / 2
+            val points = listOf(
+                midX - halfLength, midY + halfWidth,
+                midX + halfLength, midY + halfWidth,
+                midX + halfLength, midY - halfWidth,
+                midX - halfLength, midY - halfWidth
+            ).toFloatArray()
+
+            matrix.reset()
+            matrix.setRotate(-degree.toFloat(), (lastPoint.x + x) / 2, midY)
+            matrix.mapPoints(points)
+
+            roundPath.moveTo(points[0], points[1])
+            roundPath.lineTo(points[2], points[3])
+            roundPath.lineTo(points[4], points[5])
+            roundPath.lineTo(points[6], points[7])
+            lastPoint.set(x, y)
         }
     }
 
     data class DrawOp(
         val type: DrawOpType,
-        var pathList: List<Path>
+        var pathList: List<PathData>
     )
 
     enum class DrawMode {
@@ -185,5 +249,18 @@ class WordView @JvmOverloads constructor(
 
     enum class DrawOpType {
         ERASER, PENCIL
+    }
+
+    companion object {
+        private fun convertDpToPixel(dp: Float, context: Context): Float {
+            return dp * (context.resources.displayMetrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)
+        }
+
+        fun angleOf(p1: PointF, p2: PointF): Double {
+            val deltaY = (p1.y - p2.y).toDouble()
+            val deltaX = (p2.x - p1.x).toDouble()
+            val result = Math.toDegrees(atan2(deltaY, deltaX))
+            return if (result < 0) 360.0 + result else result
+        }
     }
 }
