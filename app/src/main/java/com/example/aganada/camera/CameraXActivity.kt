@@ -16,18 +16,19 @@ package com.example.aganada.camera
  */
 import androidx.lifecycle.ViewModelProvider
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.*
 import android.net.Uri
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
-import android.widget.ArrayAdapter
 import android.widget.CompoundButton
-import android.widget.Spinner
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.camera.core.*
@@ -36,6 +37,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import com.example.aganada.MainActivity
 import com.example.aganada.R
 import com.example.aganada.camera.objectDetector.ObjectDetectorProcessor
 import com.example.aganada.camera.utils.GraphicOverlay
@@ -45,10 +47,13 @@ import com.google.android.gms.common.annotation.KeepName
 import com.google.mlkit.common.MlKitException
 import com.google.mlkit.common.model.LocalModel
 import kotlinx.android.synthetic.main.activity_vision_camerax_live_preview.*
-import java.io.File
-import java.net.URI
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
+
 //import com.google.mlkit.vision.demo.VisionImageProcessor
 /*
 import com.google.mlkit.vision.demo.kotlin.barcodescanner.BarcodeScannerProcessor
@@ -88,11 +93,14 @@ class CameraXActivity :
     private var captureUseCase: ImageCapture? = null
     private var analysisUseCase: ImageAnalysis? = null
     private var imageProcessor: VisionImageProcessor? = null
+    private var objectDetectorProcessor: ObjectDetectorProcessor? = null
     private var needUpdateGraphicOverlayImageSourceInfo = false
     private var selectedModel = OBJECT_DETECTION_CUSTOM
     private var lensFacing = CameraSelector.LENS_FACING_BACK
     private var cameraSelector: CameraSelector? = null
     private lateinit var outputDirectory: File
+    private var capture = false
+    private var captureTouchCoords: Pair<Int, Int>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,7 +118,7 @@ class CameraXActivity :
         if (graphicOverlay == null) {
             Log.d(TAG, "graphicOverlay is null")
         }
-        camera_capture_button.setOnClickListener { takePhoto() }
+        preview_view.setOnTouchListener { _, motionEvent -> takePhoto(motionEvent) }
         outputDirectory = getOutputDirectory()
 
 
@@ -142,34 +150,11 @@ class CameraXActivity :
                else filesDir
     }
 
-    private fun takePhoto(){
+    private fun takePhoto(event: MotionEvent): Boolean{
         Log.d(TAG, "takePhoto")
-        // reference to captureUseCase. If null, end function
-        val imageCapture = captureUseCase ?: return
-
-        // create file to hold image
-        // TODO: change name to hold detected object
-        val photoFile = File(
-            outputDirectory,
-            SimpleDateFormat(FILENAME_FORMAT, Locale.US
-            ).format(System.currentTimeMillis()) + ".jpg")
-
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
-        imageCapture.takePicture(
-            outputOptions, ContextCompat.getMainExecutor(this), object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exception: ImageCaptureException) {
-                    Log.e(TAG, "${exception.message}")
-                }
-
-                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    Log.d(TAG, "onImageSaved")
-                    val savedUrl = Uri.fromFile(photoFile)  // outputFileResults.savedUri
-                    val msg = "Image saved to $savedUrl"
-                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
+        captureTouchCoords = Pair(event.x.toInt(), event.y.toInt())
+        capture = true
+        return true
     }
 
     override fun onSaveInstanceState(bundle: Bundle) {
@@ -306,7 +291,8 @@ class CameraXActivity :
                             LocalModel.Builder().setAssetFilePath("custom_models/object_labeler.tflite").build()
                         val customObjectDetectorOptions =
                             PreferenceUtils.getCustomObjectDetectorOptionsForLivePreview(this, localModel)
-                        customObjectDetectorOptions?.let { ObjectDetectorProcessor(this, it) }
+                        objectDetectorProcessor = customObjectDetectorOptions?.let { ObjectDetectorProcessor(this, it) }
+                        objectDetectorProcessor
                     }
                     else -> throw IllegalStateException("Invalid model name")
                 }
@@ -326,6 +312,7 @@ class CameraXActivity :
         if (targetResolution != null) {
             builder.setTargetResolution(targetResolution)
         }
+        builder.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
         analysisUseCase = builder.build()
 
         needUpdateGraphicOverlayImageSourceInfo = true
@@ -348,6 +335,10 @@ class CameraXActivity :
                 try {
                     // !! -> ?
                     imageProcessor?.processImageProxy(imageProxy, graphicOverlay)
+                    if(capture){
+                        Log.d("HYUNSOO", "capture is on -> save image")
+                        saveImage(imageProxy)
+                    }
 
                 } catch (e: MlKitException) {
                     Log.e(TAG, "Failed to process image. Error: " + e.localizedMessage)
@@ -356,6 +347,158 @@ class CameraXActivity :
             }
         )
         cameraProvider!!.bindToLifecycle(this, cameraSelector!!, analysisUseCase)
+    }
+
+    private fun saveImage(image: ImageProxy){
+        capture = false
+        if(objectDetectorProcessor != null){
+            Log.d(TAG, "ObjectDetectorProcessor properly instantiated")
+            // Case 1: no detected object in current image
+            if(objectDetectorProcessor?.getDetectedObjects().isNullOrEmpty()){
+                Log.e(TAG, "Tried to save the image of a non-detected object")
+                Toast.makeText(baseContext, "No objects were detected. Please point the camera to a valid object",
+                    Toast.LENGTH_LONG).show()
+                return
+            }
+            // Case 2: there are detected objects in current image
+            val detectedObjects = objectDetectorProcessor?.getDetectedObjects()
+            if (detectedObjects != null) {
+                var targetLabel = ""
+                var targetBoundingBox: Rect? = null
+                var targetBoundingBoxF: RectF? = null
+
+                // Get detection info for the touched image
+                for (detectedObject in detectedObjects) {
+                    targetBoundingBoxF = convertCoordinates(detectedObject.boundingBox, image)
+                    Log.d("HYUNSOO", "F coordinates - " + targetBoundingBoxF!!.left + " " +
+                            targetBoundingBoxF.top + " " + targetBoundingBoxF.right + " " +
+                            targetBoundingBoxF.bottom)
+                    if (targetBoundingBoxF.contains(
+                            captureTouchCoords!!.first.toFloat(),
+                            captureTouchCoords!!.second.toFloat()
+                        )
+                    ) {
+                        targetBoundingBox = detectedObject.boundingBox
+                        // select label with highest confidence
+                        val confidence = 0
+                        for (label in detectedObject.labels){
+                            if(label.confidence > confidence){
+                                targetLabel = label.text
+                            }
+                        }
+                        Log.d("HYUNSOO", "touched inside box")
+                        break
+                    }
+                }
+                // Case 2-1: touched inside one of the detected objects' box
+                if(targetBoundingBox != null){
+                    val croppedBitmap = Bitmap.createBitmap(image.toBitmap(),
+                        targetBoundingBox.left, targetBoundingBox.top,
+                        targetBoundingBox.width(), targetBoundingBox.height())
+
+                    // save image to temp directory
+                    // TODO: This method is deprecated. Change this to using MediaFile
+                    val photoFile = File(
+                        outputDirectory,
+                        targetLabel + "_" + SimpleDateFormat(FILENAME_FORMAT, Locale.US
+                        ).format(System.currentTimeMillis()) + ".jpeg")
+                    try {
+                        // Get the file output stream
+                        val stream: OutputStream = FileOutputStream(photoFile)
+                        // Compress bitmap
+                        croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                        // Flush the stream
+                        stream.flush()
+                        // Close stream
+                        stream.close()
+                    } catch (e: IOException){ // Catch the exception
+                        e.printStackTrace()
+                    }
+
+                    // Navigate to main activity and pass the file name
+                    Log.d("HYUNSOO", "Saved image: ${Uri.parse(photoFile.absolutePath).toString()}")
+                    Toast.makeText(baseContext, "Successfully saved image. Must navigate to next view",
+                        Toast.LENGTH_LONG).show()
+                    val intent = Intent(this, MainActivity::class.java).apply {
+                        putExtra("captured image name", Uri.parse(photoFile.absolutePath).toString())
+                    }
+                    startActivity(intent)
+
+                }
+                // Case 2-2: touched outside all detected objects' boxes
+                else{
+                    Log.d("HYUNSOO", "targetboundingbox is null... touched outside a valid box" +
+                            captureTouchCoords.toString() + ", " + targetBoundingBox.toString()
+                    )
+                    Toast.makeText(baseContext, "Touched outside a valid box. Please touch inside a box.", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+        else{
+            Log.e(TAG, "ObjectDetectorProcessor was not properly instantiated")
+//            Toast.makeText(baseContext, "Object Detector was not properly instantiated", Toast.LENGTH_SHORT).show()
+            return
+        }
+    }
+
+    // mock of GraphicOverlay's translateX and translateY
+    private fun translateXY(x: Float, y: Float, image: ImageProxy): Pair<Float, Float>{
+        val imageHeight: Float = (image.height).toFloat()
+        val imageWidth:Float = (image.width).toFloat()
+        val width = (previewView!!.width).toFloat()
+        val height = (previewView!!.height).toFloat()
+        val viewAspectRatio: Float = (width / height).toFloat()
+        val imageAspectRatio: Float = (imageWidth / imageHeight).toFloat()
+        var postScaleWidthOffset = 0F
+        var postScaleHeightOffset = 0F
+        var scaleFactor = 1.0F
+        if (viewAspectRatio > imageAspectRatio) {
+            Log.d("HYUNSOO", "height is scaled")
+            // The image needs to be vertically cropped to be displayed in this view.
+            scaleFactor = (width / imageWidth).toFloat()
+            postScaleHeightOffset = (width / imageAspectRatio - height) / 2
+        } else {
+            Log.d("HYUNSOO", "width is scaled")
+            // The image needs to be horizontally cropped to be displayed in this view.
+            scaleFactor = (height / imageHeight).toFloat()
+            postScaleWidthOffset = (height * imageAspectRatio - width) / 2
+        }
+        Log.d("HYUNSOO", "image ($imageHeight, $imageWidth) / view ($height, $width) " +
+                "/ ratios ($imageAspectRatio, $viewAspectRatio) / " +
+                "scaleH ($postScaleHeightOffset, $postScaleWidthOffset, $scaleFactor) /")
+        return Pair(abs(x*scaleFactor - postScaleWidthOffset), abs(y*scaleFactor -  postScaleHeightOffset))
+    }
+
+    // convert x, y from image coordinates to view coordinates
+    private fun convertCoordinates(boundingBox: Rect, image: ImageProxy): RectF{
+        val rect = RectF(boundingBox)
+        val xy0 = translateXY(rect.left, rect.top, image)
+        val xy1 = translateXY(rect.right, rect.bottom, image)
+        rect.left = min(xy0.first, xy1.first)
+        rect.right = max(xy0.first, xy1.first)
+        rect.top = xy0.second
+        rect.bottom = xy1.second
+        return rect
+    }
+
+    // Extension function to convert ImageProxy to bitmap
+    private fun ImageProxy.toBitmap(): Bitmap {
+        val yBuffer = planes[0].buffer // Y
+        val vuBuffer = planes[2].buffer // VU
+
+        val ySize = yBuffer.remaining()
+        val vuSize = vuBuffer.remaining()
+
+        val nv21 = ByteArray(ySize + vuSize)
+
+        yBuffer.get(nv21, 0, ySize)
+        vuBuffer.get(nv21, ySize, vuSize)
+
+        val yuvImage = YuvImage(nv21, ImageFormat.NV21, this.width, this.height, null)
+        val out = ByteArrayOutputStream()
+        yuvImage.compressToJpeg(Rect(0, 0, yuvImage.width, yuvImage.height), 50, out)
+        val imageBytes = out.toByteArray()
+        return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
     }
 
     private val requiredPermissions: Array<String?>
