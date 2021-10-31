@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.DisplayMetrics
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.setPadding
 import com.example.aganada.R
@@ -57,6 +58,8 @@ class FlipCard private constructor(private val layout: GridLayout,
 
         frameLayout.addView(textView)
         frameLayout.addView(imageView)
+
+        frameLayout.clipChildren = false
     }
 
     private fun longClick(): Boolean {

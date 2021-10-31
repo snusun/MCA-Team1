@@ -25,19 +25,20 @@ class WordBookFragment : Fragment() {
         _binding = FragmentWordBookBinding.inflate(inflater, container, false)
         val view = binding.root
 
-        binding.cameraButton.setOnClickListener {
+        binding.imageButtonCamera.setOnClickListener {
             binding.root.findNavController().navigate(
                 R.id.action_wordBookFragment_to_cameraFragment)
         }
 
-        binding.testButton.setOnClickListener {
+        binding.imageButtonAndroid.setOnClickListener {
             binding.root.findNavController().navigate(
                 R.id.action_wordBookFragment_to_testFragment)
         }
 
         binding.addButton.setOnClickListener {
             FlipCard.create(
-                binding.gridLayout, R.drawable.ic_launcher_foreground, "Text").attach()
+                binding.gridLayout, R.drawable.ic_launcher_foreground, "Text"
+            ).attach()
         }
 
         return view
