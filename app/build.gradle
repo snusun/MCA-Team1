@@ -37,6 +37,9 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    dataBinding {
+        enabled = true
+    }
     aaptOptions {
         noCompress "tflite"
         // or noCompress "lite"
@@ -86,4 +89,7 @@ dependencies {
 
     // Object detection & tracking feature with custom bundled model
     implementation 'com.google.mlkit:object-detection-custom:16.3.3'
+
+    // Glide for imageview
+    implementation ("com.github.bumptech.glide:glide:4.11.0")
 }
