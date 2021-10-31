@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.*
 import androidx.core.view.setPadding
 import com.example.aganada.R
+import android.widget.PopupWindow as PopupWindow 
 
 class FlipCard private constructor(private val layout: GridLayout,
                                    private val imageView: ImageView,
@@ -47,12 +48,20 @@ class FlipCard private constructor(private val layout: GridLayout,
         imageView.setOnClickListener { rotateImageToText() }
         textView.setOnClickListener { rotateTextToImage() }
 
+        imageView.setOnLongClickListener { longClick() }
+        textView.setOnLongClickListener { longClick() }
+
         setVisibility(showImage = true)
         imageView.rotationY = ANGLE_IMAGE_SHOW
         textView.rotationY = ANGLE_TEXT_HIDE
 
         frameLayout.addView(textView)
         frameLayout.addView(imageView)
+    }
+
+    private fun longClick(): Boolean {
+        detach()
+        return false
     }
 
     private fun convertDpToPixel(dp: Float, context: Context): Float {
