@@ -90,7 +90,6 @@ class CameraXActivity :
     private var graphicOverlay: GraphicOverlay? = null
     private var cameraProvider: ProcessCameraProvider? = null
     private var previewUseCase: Preview? = null
-    private var captureUseCase: ImageCapture? = null
     private var analysisUseCase: ImageAnalysis? = null
     private var imageProcessor: VisionImageProcessor? = null
     private var objectDetectorProcessor: ObjectDetectorProcessor? = null
@@ -145,6 +144,8 @@ class CameraXActivity :
         val mediaDir = externalMediaDirs.firstOrNull()?.let {
             File(it, "tmp").apply { mkdirs() }
         }
+        Log.d("HYUNSOO", "externalMedia"+externalMediaDirs.firstOrNull())
+        Log.d("HYUNSOO", mediaDir.toString()+ " "+filesDir)
 
         return if (mediaDir != null && mediaDir.exists()) mediaDir
                else filesDir
@@ -227,7 +228,6 @@ class CameraXActivity :
             // As required by CameraX API, unbinds all use cases before trying to re-bind any of them.
             cameraProvider!!.unbindAll()
             bindPreviewUseCase()
-            bindCaptureUseCase()
             bindAnalysisUseCase()
         }
     }
@@ -251,24 +251,6 @@ class CameraXActivity :
         previewUseCase = builder.build()
         previewUseCase!!.setSurfaceProvider(previewView!!.getSurfaceProvider())
         cameraProvider!!.bindToLifecycle( this, cameraSelector!!, previewUseCase)
-    }
-
-    private fun bindCaptureUseCase(){
-        if (cameraProvider == null) {
-            return
-        }
-        if (captureUseCase != null) {
-            cameraProvider!!.unbind(captureUseCase)
-        }
-
-        val builder = ImageCapture.Builder()
-        val targetResolution = PreferenceUtils.getCameraXTargetResolution(this, lensFacing)
-        if (targetResolution != null) {
-            builder.setTargetResolution(targetResolution)
-        }
-        captureUseCase = builder.build()
-        cameraProvider!!.bindToLifecycle( this, cameraSelector!!, captureUseCase)
-        Log.d(TAG, "bindCaptureUseCase")
     }
 
     private fun bindAnalysisUseCase() {
@@ -336,6 +318,7 @@ class CameraXActivity :
                     // !! -> ?
                     imageProcessor?.processImageProxy(imageProxy, graphicOverlay)
                     if(capture){
+                        capture = false
                         Log.d("HYUNSOO", "capture is on -> save image")
                         saveImage(imageProxy)
                     }
