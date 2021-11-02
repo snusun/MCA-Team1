@@ -143,7 +143,7 @@ class CameraXActivity :
     private fun getOutputDirectory(): File{
         // TODO: change the following to MediaStore
         val mediaDir = externalMediaDirs.firstOrNull()?.let {
-            File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
+            File(it, "tmp").apply { mkdirs() }
         }
 
         return if (mediaDir != null && mediaDir.exists()) mediaDir
