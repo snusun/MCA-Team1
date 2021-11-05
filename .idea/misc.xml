@@ -10,6 +10,9 @@
         <entry key="app/src/main/res/layout/activity_vision_camerax_live_preview.xml" value="0.2942708333333333" />
         <entry key="app/src/main/res/layout/fragment_camera.xml" value="0.2682291666666667" />
         <entry key="app/src/main/res/layout/fragment_learn.xml" value="0.335" />
+        <entry key="app/src/main/res/layout/fragment_test.xml" value="0.1703125" />
+        <entry key="app/src/main/res/layout/settings_style.xml" value="0.1703125" />
+        <entry key="app/src/main/res/layout/spinner_style.xml" value="0.1703125" />
       </map>
     </option>
   </component>

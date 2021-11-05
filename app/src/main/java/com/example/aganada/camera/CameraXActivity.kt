@@ -100,6 +100,7 @@ class CameraXActivity :
     private lateinit var outputDirectory: File
     private var capture = false
     private var captureTouchCoords: Pair<Int, Int>? = null
+    private var captureEventType: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -152,10 +153,20 @@ class CameraXActivity :
     }
 
     private fun takePhoto(event: MotionEvent): Boolean{
-        Log.d(TAG, "takePhoto")
-        captureTouchCoords = Pair(event.x.toInt(), event.y.toInt())
-        capture = true
-        return true
+        Log.d(TAG, "takePhoto - ${event.action}")
+        return when(event.action){
+            MotionEvent.ACTION_DOWN -> true
+            MotionEvent.ACTION_MOVE -> true
+            MotionEvent.ACTION_UP -> {
+                captureTouchCoords = Pair(event.x.toInt(), event.y.toInt())
+                capture = true
+                captureEventType = event.action
+                true
+            }
+            else -> {
+                false
+            }
+        }
     }
 
     override fun onSaveInstanceState(bundle: Bundle) {
@@ -319,7 +330,7 @@ class CameraXActivity :
                     imageProcessor?.processImageProxy(imageProxy, graphicOverlay)
                     if(capture){
                         capture = false
-                        Log.d("HYUNSOO", "capture is on -> save image")
+                        Log.d("HYUNSOO", "capture is on -> save image -$capture")
                         saveImage(imageProxy)
                     }
 
@@ -334,6 +345,7 @@ class CameraXActivity :
 
     private fun saveImage(image: ImageProxy){
         capture = false
+        Log.d("HYUNSOO", "saveImage -$capture")
         if(objectDetectorProcessor != null){
             Log.d(TAG, "ObjectDetectorProcessor properly instantiated")
             // Case 1: no detected object in current image
@@ -375,7 +387,9 @@ class CameraXActivity :
                 }
                 // Case 2-1: touched inside one of the detected objects' box
                 if(targetBoundingBox != null){
-                    val croppedBitmap = Bitmap.createBitmap(image.toBitmap(),
+                    val bitmap = image.toBitmap()
+                    Log.d("BITMAP", "${bitmap.byteCount} ${bitmap.config} ${bitmap.generationId}}")
+                    val croppedBitmap = Bitmap.createBitmap(bitmap,
                         targetBoundingBox.left, targetBoundingBox.top,
                         targetBoundingBox.width(), targetBoundingBox.height())
 
@@ -392,6 +406,7 @@ class CameraXActivity :
                         croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
                         // Flush the stream
                         stream.flush()
+                        Log.d("BUGFIX", "photo flushed - $captureEventType")
                         // Close stream
                         stream.close()
                     } catch (e: IOException){ // Catch the exception
@@ -399,11 +414,11 @@ class CameraXActivity :
                     }
 
                     // Navigate to main activity and pass the file name
-                    Log.d("HYUNSOO", "Saved image: ${Uri.parse(photoFile.absolutePath).toString()}")
+                    Log.d("HYUNSOO", "Saved image: ${Uri.parse(photoFile.absolutePath)} - $capture")
                     Toast.makeText(baseContext, "Successfully saved image. Must navigate to next view",
                         Toast.LENGTH_LONG).show()
                     val intent = Intent(this, MainActivity::class.java).apply {
-                        putExtra("captured image name", Uri.parse(photoFile.absolutePath).toString())
+                        putExtra("captured_image_name", Uri.parse(photoFile.absolutePath).toString())
                     }
                     startActivity(intent)
 
@@ -425,9 +440,7 @@ class CameraXActivity :
     }
 
     // mock of GraphicOverlay's translateX and translateY
-    private fun translateXY(x: Float, y: Float, image: ImageProxy): Pair<Float, Float>{
-        val imageHeight: Float = (image.height).toFloat()
-        val imageWidth:Float = (image.width).toFloat()
+    private fun translateXY(x: Float, y: Float, imageHeight: Float, imageWidth: Float): Pair<Float, Float>{
         val width = (previewView!!.width).toFloat()
         val height = (previewView!!.height).toFloat()
         val viewAspectRatio: Float = (width / height).toFloat()
@@ -455,8 +468,8 @@ class CameraXActivity :
     // convert x, y from image coordinates to view coordinates
     private fun convertCoordinates(boundingBox: Rect, image: ImageProxy): RectF{
         val rect = RectF(boundingBox)
-        val xy0 = translateXY(rect.left, rect.top, image)
-        val xy1 = translateXY(rect.right, rect.bottom, image)
+        val xy0 = translateXY(rect.left, rect.top, (image.height).toFloat(), (image.width).toFloat())
+        val xy1 = translateXY(rect.right, rect.bottom, (image.height).toFloat(), (image.width).toFloat())
         rect.left = min(xy0.first, xy1.first)
         rect.right = max(xy0.first, xy1.first)
         rect.top = xy0.second
@@ -479,7 +492,7 @@ class CameraXActivity :
 
         val yuvImage = YuvImage(nv21, ImageFormat.NV21, this.width, this.height, null)
         val out = ByteArrayOutputStream()
-        yuvImage.compressToJpeg(Rect(0, 0, yuvImage.width, yuvImage.height), 50, out)
+        yuvImage.compressToJpeg(Rect(0, 0, yuvImage.width, yuvImage.height), 100, out)
         val imageBytes = out.toByteArray()
         return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
     }
