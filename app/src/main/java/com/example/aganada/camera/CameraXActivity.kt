@@ -47,6 +47,8 @@ import com.google.android.gms.common.annotation.KeepName
 import com.google.mlkit.common.MlKitException
 import com.google.mlkit.common.model.LocalModel
 import kotlinx.android.synthetic.main.activity_vision_camerax_live_preview.*
+import org.json.JSONException
+import org.json.JSONObject
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -101,6 +103,7 @@ class CameraXActivity :
     private var capture = false
     private var captureTouchCoords: Pair<Int, Int>? = null
     private var captureEventType: Int? = null
+    private var ko_labels: JSONObject? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,6 +123,7 @@ class CameraXActivity :
         }
         preview_view.setOnTouchListener { _, motionEvent -> takePhoto(motionEvent) }
         outputDirectory = getOutputDirectory()
+        ko_labels = getKoLabels()
 
 
         ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(application))
@@ -138,6 +142,17 @@ class CameraXActivity :
         if (!allPermissionsGranted()) {
             runtimePermissions
         }
+    }
+
+    private fun getKoLabels(): JSONObject?{
+        var jsonString: String
+        try{
+            jsonString = assets.open("ko_labels.json").bufferedReader().use { it.readText() }
+        } catch (e: IOException){
+            e.printStackTrace()
+            return null
+        }
+        return JSONObject(jsonString)
     }
 
     private fun getOutputDirectory(): File{
@@ -394,11 +409,20 @@ class CameraXActivity :
                         targetBoundingBox.left, targetBoundingBox.top,
                         targetBoundingBox.width(), targetBoundingBox.height())
 
+                    // translate label to korean
+                    var finalLabel = targetLabel
+                    try {
+                        finalLabel = ko_labels!!.get(targetLabel) as String
+                        Log.d("TRANSLATION", "$finalLabel")
+                    } catch (e: JSONException){
+                        e.printStackTrace()
+                    }
+
                     // save image to temp directory
                     // TODO: This method is deprecated. Change this to using MediaFile
                     val photoFile = File(
                         outputDirectory,
-                        targetLabel + "_" + SimpleDateFormat(FILENAME_FORMAT, Locale.US
+                        finalLabel + "_" + SimpleDateFormat(FILENAME_FORMAT, Locale.US
                         ).format(System.currentTimeMillis()) + ".jpeg")
                     try {
                         // Get the file output stream
