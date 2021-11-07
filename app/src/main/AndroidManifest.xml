@@ -20,7 +20,7 @@
             android:launchMode="singleTask">
         </activity>
         <activity android:name=".camera.CameraXActivity"
-            android:screenOrientation="landscape"
+            android:screenOrientation="sensorLandscape"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
