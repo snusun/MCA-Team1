@@ -18,8 +18,7 @@ package com.example.aganada.camera.objectDetector
 
 import android.content.Context
 import android.util.Log
-import com.example.aganada.camera.utils.GraphicOverlay
-import com.example.aganada.camera.utils.VisionProcessorBase
+import com.example.aganada.camera.utils.*
 import com.google.android.gms.tasks.Task
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.objects.DetectedObject
@@ -33,6 +32,15 @@ class ObjectDetectorProcessor(context: Context, options: ObjectDetectorOptionsBa
     VisionProcessorBase<List<DetectedObject>>(context) {
 
     private val detector: ObjectDetector = ObjectDetection.getClient(options)
+
+    private var detectedObjects: List<DetectedObject>? = null
+
+    fun getDetectedObjects(): List<DetectedObject>?{
+        return detectedObjects
+    }
+    fun setDetectedObjects(list: List<DetectedObject>?){
+        detectedObjects = list
+    }
 
     override fun stop() {
         super.stop()
@@ -55,6 +63,7 @@ class ObjectDetectorProcessor(context: Context, options: ObjectDetectorOptionsBa
         for (result in results) {
             graphicOverlay.add(ObjectGraphic(graphicOverlay, result))
         }
+        setDetectedObjects(results)
     }
 
     override fun onFailure(e: Exception) {
