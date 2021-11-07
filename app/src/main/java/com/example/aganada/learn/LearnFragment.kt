@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
@@ -50,6 +51,7 @@ class LearnFragment : Fragment() {
             redoButton.setOnClickListener { wordView.reDo() }
             checkButton.setOnClickListener {
                 Log.v("LearnFragment", "Check button clicked.")
+                this@LearnFragment.viewModel.recognizeText(wordView.pathSet)
             }
         }
     }
@@ -71,6 +73,10 @@ class LearnFragment : Fragment() {
                     .load(it)
                     .into(binding.wordImage)
                 binding.wordImage
+            }
+
+            recognitionResult.observe(viewLifecycleOwner) {
+                Toast.makeText(context, "recognize: $it", Toast.LENGTH_SHORT).show()
             }
         }
     }

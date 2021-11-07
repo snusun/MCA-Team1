@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.graphics.PointF
+import com.google.mlkit.vision.digitalink.Ink
 import kotlin.math.atan2
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -36,8 +37,8 @@ class WordView @JvmOverloads constructor(
 
     private val drawOpStack = mutableListOf<DrawOp>()
     private val undoStack = mutableListOf<DrawOp>()
-    private val pathSet = mutableSetOf<PathData>()
     private var removingList: MutableList<PathData>? = null
+    val pathSet = mutableSetOf<PathData>()
 
     var drawMode: DrawMode = DrawMode.PENCIL
 
@@ -157,7 +158,7 @@ class WordView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canvas?: return
-        Log.d("WordView", "onDraw $centerX $centerY")
+//        Log.d("WordView", "onDraw $centerX $centerY")
 
         /* draw word */
         run {
@@ -202,39 +203,54 @@ class WordView @JvmOverloads constructor(
 
     inner class PathData(x: Float, y: Float) {
         val rawPath: Path = Path()
-        val roundPath: Path = Path()
-        private val lastPoint: PointF = PointF()
+        private val _roundPath: Path = Path()
+        val roundPath: Path
+            get() { if (!isMade) makePath(); return _roundPath }
+
+        private val _inkPointList: MutableList<Ink.Point> = mutableListOf()
+        val inkPointList: List<Ink.Point>
+            get() { if (!isMade) makePath(); return _inkPointList }
+
+        private var isMade = false
+
+        private val startPoint: PointF = PointF()
         private val matrix: Matrix = Matrix()
 
         init {
             rawPath.moveTo(x, y)
-            roundPath.moveTo(x, y)
-            lastPoint.set(x, y)
+            _inkPointList.add(Ink.Point.create(x, y, System.currentTimeMillis()))
+            startPoint.set(x, y)
         }
 
         fun lineTo(x: Float, y: Float) {
+            _inkPointList.add(Ink.Point.create(x, y, System.currentTimeMillis()))
             rawPath.lineTo(x, y)
-            val degree = angleOf(lastPoint, PointF(x, y))
-            val midX = (lastPoint.x + x)/2
-            val midY = (lastPoint.y + y)/2
-            val halfWidth = convertDpToPixel(2f, context)
-            val halfLength = sqrt((lastPoint.x - x).pow(2) + (lastPoint.y - y).pow(2)) / 2
-            val points = listOf(
-                midX - halfLength, midY + halfWidth,
-                midX + halfLength, midY + halfWidth,
-                midX + halfLength, midY - halfWidth,
-                midX - halfLength, midY - halfWidth
-            ).toFloatArray()
+        }
 
-            matrix.reset()
-            matrix.setRotate(-degree.toFloat(), (lastPoint.x + x) / 2, midY)
-            matrix.mapPoints(points)
-
-            roundPath.moveTo(points[0], points[1])
-            roundPath.lineTo(points[2], points[3])
-            roundPath.lineTo(points[4], points[5])
-            roundPath.lineTo(points[6], points[7])
-            lastPoint.set(x, y)
+        private fun makePath() {
+            val prevPoint = PointF(startPoint.x, startPoint.y)
+            for (point in _inkPointList) {
+                val degree = angleOf(prevPoint, PointF(point.x, point.y))
+                val midX = (prevPoint.x + point.x) / 2
+                val midY = (prevPoint.y + point.y) / 2
+                val halfWidth = convertDpToPixel(2f, context)
+                val halfLength = sqrt((prevPoint.x - point.x).pow(2) + (prevPoint.y - point.y).pow(2)) / 2
+                val points = listOf(
+                    midX - halfLength, midY + halfWidth,
+                    midX + halfLength, midY + halfWidth,
+                    midX + halfLength, midY - halfWidth,
+                    midX - halfLength, midY - halfWidth
+                ).toFloatArray()
+                matrix.reset()
+                matrix.setRotate(-degree.toFloat(), midX, midY)
+                matrix.mapPoints(points)
+                _roundPath.moveTo(points[0], points[1])
+                _roundPath.lineTo(points[2], points[3])
+                _roundPath.lineTo(points[4], points[5])
+                _roundPath.lineTo(points[6], points[7])
+                prevPoint.set(point.x, point.y)
+            }
+            isMade = true
         }
     }
 

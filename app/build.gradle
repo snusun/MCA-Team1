@@ -92,4 +92,8 @@ dependencies {
 
     // Glide for imageview
     implementation ("com.github.bumptech.glide:glide:4.11.0")
+
+    // ML kit for ink recognition
+    implementation 'com.google.mlkit:digital-ink-recognition:17.0.0'
+
 }
