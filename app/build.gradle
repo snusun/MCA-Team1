@@ -89,11 +89,11 @@ dependencies {
 
     // Object detection & tracking feature with custom bundled model
     implementation 'com.google.mlkit:object-detection-custom:16.3.3'
+    // ML kit for ink recognition
+    implementation 'com.google.mlkit:digital-ink-recognition:17.0.0'
 
     // Glide for imageview
     implementation ("com.github.bumptech.glide:glide:4.11.0")
 
-    // ML kit for ink recognition
-    implementation 'com.google.mlkit:digital-ink-recognition:17.0.0'
 
 }

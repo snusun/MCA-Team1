@@ -70,6 +70,15 @@ class WordView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun clear() {
+        drawOpStack.clear()
+        undoStack.clear()
+        removingList = null
+        pathSet.clear()
+        drawMode = DrawMode.PENCIL
+        invalidate()
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (drawMode == DrawMode.PENCIL) {

@@ -1,12 +1,11 @@
 package com.example.aganada.test
 
 import android.content.Context
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.navigation.findNavController
-import com.example.aganada.R
 import com.example.aganada.views.InkManager
 import com.example.aganada.views.WordView
 import com.example.aganada.views.WordView.DrawMode
@@ -48,5 +47,9 @@ class TestFragmentViewModel: ViewModel() {
             DrawMode.ERASER -> DrawMode.PENCIL
             else -> DrawMode.PENCIL
         }
+    }
+
+    companion object {
+        const val TAG = "TestFragmentViewModel"
     }
 }

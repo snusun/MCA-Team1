@@ -14,6 +14,8 @@ import com.example.aganada.views.WordView
 import com.example.aganada.views.WordView.DrawMode
 import com.google.mlkit.vision.digitalink.Ink
 import java.io.File
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 class LearnFragmentViewModel: ViewModel() {
     private val _drawMode: MutableLiveData<DrawMode> = MutableLiveData(DrawMode.PENCIL)
@@ -22,15 +24,18 @@ class LearnFragmentViewModel: ViewModel() {
     private val _photo: MutableLiveData<File> = MutableLiveData()
     val photo: LiveData<File> = _photo
 
-    private val _recognitionResult: MutableLiveData<String> = MutableLiveData()
-    val recognitionResult: LiveData<String> = _recognitionResult
+    private val _label: MutableLiveData<String> = MutableLiveData()
+    val label: LiveData<String> = _label
+
+    private val _checkResult: MutableLiveData<CheckResult> = MutableLiveData()
+    val checkResult: LiveData<CheckResult> = _checkResult
 
     private val inkManager: InkManager = InkManager().also {
         it.setActiveModel("ko")
         it.download()
         it.setOnResultListener(object : InkManager.OnResultListener{
             override fun onSuccessListener(result: String) {
-                _recognitionResult.value = result
+                onRecognitionResultOut(result)
             }
 
             override fun onFailureListener() {
@@ -39,9 +44,19 @@ class LearnFragmentViewModel: ViewModel() {
         })
     }
 
-    fun loadPhoto(context: Context) {
-        // TODO ("Load Photo File")
-//        _photo.value = photo_file
+    fun loadPhoto(filename: String) {
+        val pattern: Pattern = Pattern.compile("^.+tmp/(.+)_.+\\.jpeg$")
+        val matches: Matcher = pattern.matcher(filename)
+        if (matches.matches()) {
+            val file = File(filename)
+            val label = matches.group(1)
+            if (file.exists()) {
+                _photo.value = File(filename)
+                _label.value = label
+            }
+        } else {
+            Log.v("JONGSUN", "$filename no Label found.")
+        }
     }
 
     fun onModeButtonClicked(view: View) {
@@ -62,6 +77,16 @@ class LearnFragmentViewModel: ViewModel() {
             inkBuilder.addStroke(strokeBuilder.build())
         }
         inkManager.recognize(inkBuilder)
-
     }
+
+    fun onRecognitionResultOut(result: String) {
+        fun String.removeWhitespaces() = replace(" ", "")
+        _checkResult.value = CheckResult(
+            correct = result.removeWhitespaces() == label.value?.removeWhitespaces(),
+            label = label.value?: "",
+            answer = result,
+        )
+    }
+
+    data class CheckResult(val correct: Boolean, val label: String, val answer: String)
 }
