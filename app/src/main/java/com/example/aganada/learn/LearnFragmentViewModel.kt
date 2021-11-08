@@ -44,16 +44,6 @@ class LearnFragmentViewModel: ViewModel() {
 //        _photo.value = photo_file
     }
 
-    fun onWordbookButtonClicked(view: View) {
-        view.findNavController().navigate(
-            R.id.action_learnFragment_to_wordBookFragment)
-    }
-
-    fun onCameraButtonClicked(view: View) {
-        view.findNavController().navigate(
-            R.id.action_learnFragment_to_cameraFragment2)
-    }
-
     fun onModeButtonClicked(view: View) {
         _drawMode.value = when (drawMode.value) {
             DrawMode.PENCIL -> DrawMode.ERASER

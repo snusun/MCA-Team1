@@ -1,7 +1,6 @@
 package com.example.aganada.test
 
 import android.content.Context
-import android.util.Log
 import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -43,39 +42,11 @@ class TestFragmentViewModel: ViewModel() {
 //        _photo.value = photo_file
     }
 
-    fun onWordbookButtonClicked(view: View) {
-        view.findNavController().navigate(
-            R.id.action_learnFragment_to_wordBookFragment)
-    }
-
-    fun onCameraButtonClicked(view: View) {
-        view.findNavController().navigate(
-            R.id.action_learnFragment_to_cameraFragment2)
-    }
-
     fun onModeButtonClicked(view: View) {
         _drawMode.value = when (drawMode.value) {
             DrawMode.PENCIL -> DrawMode.ERASER
             DrawMode.ERASER -> DrawMode.PENCIL
             else -> DrawMode.PENCIL
         }
-    }
-
-    fun recognizeText(set: Collection<WordView.PathData>) {
-        val inkBuilder = Ink.builder()
-        for (data in set) {
-            val strokeBuilder = Ink.Stroke.builder()
-            for (point in data.inkPointList) {
-                strokeBuilder.addPoint(point)
-            }
-            inkBuilder.addStroke(strokeBuilder.build())
-        }
-        val result = inkManager.recognize(inkBuilder).addOnSuccessListener {
-            Log.d(javaClass.simpleName, it?: "no")
-        }
-    }
-
-    companion object {
-        const val TAG = "TestFragmentViewModel"
     }
 }

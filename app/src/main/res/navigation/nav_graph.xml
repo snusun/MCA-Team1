@@ -3,19 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/cameraFragment">
+    app:startDestination="@id/learnFragment">
 
     <fragment
-        android:id="@+id/cameraFragment"
-        android:name="com.example.aganada.camera.CameraFragment"
-        android:label="fragment_camera"
-        tools:layout="@layout/fragment_camera" >
+        android:id="@+id/learnFragment"
+        android:name="com.example.aganada.learn.LearnFragment"
+        android:label="fragment_learn"
+        tools:layout="@layout/fragment_learn" >
         <action
-            android:id="@+id/action_cameraFragment_to_wordBookFragment"
+            android:id="@+id/action_learnFragment_to_wordBookFragment"
             app:destination="@id/wordBookFragment" />
-        <action
-            android:id="@+id/action_cameraFragment_to_learnFragment2"
-            app:destination="@id/learnFragment" />
     </fragment>
     <fragment
         android:id="@+id/testFragment"
@@ -27,25 +24,10 @@
             app:destination="@id/wordBookFragment" />
     </fragment>
     <fragment
-        android:id="@+id/learnFragment"
-        android:name="com.example.aganada.learn.LearnFragment"
-        android:label="fragment_learn"
-        tools:layout="@layout/fragment_learn" >
-        <action
-            android:id="@+id/action_learnFragment_to_wordBookFragment"
-            app:destination="@id/wordBookFragment" />
-        <action
-            android:id="@+id/action_learnFragment_to_cameraFragment2"
-            app:destination="@id/cameraFragment" />
-    </fragment>
-    <fragment
         android:id="@+id/wordBookFragment"
         android:name="com.example.aganada.wordbook.WordBookFragment"
         android:label="fragment_word_book"
         tools:layout="@layout/fragment_word_book" >
-        <action
-            android:id="@+id/action_wordBookFragment_to_cameraFragment"
-            app:destination="@id/cameraFragment" />
         <action
             android:id="@+id/action_wordBookFragment_to_testFragment"
             app:destination="@id/testFragment" />
