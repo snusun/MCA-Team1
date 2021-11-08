@@ -6,17 +6,23 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.aganada.R
 import com.example.aganada.camera.CameraXActivity
 import com.example.aganada.views.WordView.DrawMode
 import com.example.aganada.databinding.FragmentLearnBinding
 import kotlinx.android.synthetic.main.fragment_learn.view.*
+import kotlinx.android.synthetic.main.fragment_test.*
+import java.io.File
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 class LearnFragment : Fragment() {
     private var _binding: FragmentLearnBinding? = null
@@ -38,22 +44,11 @@ class LearnFragment : Fragment() {
         Log.d("LearnFragment", "onCreateView")
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_learn, container, false)
         binding.viewModel = viewModel
-        val view = binding.root
 
         setView()
         setObserve()
 
-        binding.wordView.word = "워드"
-        binding.cameraButton.setOnClickListener {
-            val intent = Intent(context, CameraXActivity::class.java)
-            startActivity(intent)
-        }
-        binding.wordbookButton.setOnClickListener {
-            view.findNavController().navigate(
-                R.id.action_learnFragment_to_wordBookFragment)
-        }
-
-        return view
+        return binding.root
     }
 
     private fun setView() {
@@ -62,6 +57,16 @@ class LearnFragment : Fragment() {
             redoButton.setOnClickListener { wordView.reDo() }
             checkButton.setOnClickListener {
                 Log.v("LearnFragment", "Check button clicked.")
+                this@LearnFragment.viewModel.recognizeText(wordView.pathSet)
+            }
+
+            cameraButton.setOnClickListener {
+                val intent = Intent(context, CameraXActivity::class.java)
+                startActivity(intent)
+            }
+
+            wordbookButton.setOnClickListener {
+                findNavController().navigate(R.id.action_learnFragment_to_wordBookFragment)
             }
         }
     }
@@ -69,13 +74,11 @@ class LearnFragment : Fragment() {
     private fun setObserve() {
         viewModel.apply {
             drawMode.observe(viewLifecycleOwner) {
-                if (it == DrawMode.PENCIL) {
-                    binding.drawModeButton.setImageResource(R.drawable.ic_baseline_eraser_24)
-                    binding.wordView.drawMode = DrawMode.PENCIL
-                } else if (it == DrawMode.ERASER) {
-                    binding.drawModeButton.setImageResource(R.drawable.ic_baseline_pencil_24)
-                    binding.wordView.drawMode = DrawMode.ERASER
-                }
+                this@LearnFragment.onDrawModeChange(it)
+            }
+
+            label.observe(viewLifecycleOwner) {
+                binding.wordView.word = it
             }
 
             photo.observe(viewLifecycleOwner) {
@@ -84,12 +87,36 @@ class LearnFragment : Fragment() {
                     .into(binding.wordImage)
                 binding.wordImage
             }
+
+            checkResult.observe(viewLifecycleOwner) {
+                onCheckResultOut(it)
+            }
+        }
+    }
+
+    private fun onDrawModeChange(drawMode: DrawMode) {
+        if (drawMode == DrawMode.PENCIL) {
+            binding.drawModeButton.setImageResource(R.drawable.ic_baseline_eraser_24)
+            binding.wordView.drawMode = DrawMode.PENCIL
+        } else if (drawMode == DrawMode.ERASER) {
+            binding.drawModeButton.setImageResource(R.drawable.ic_baseline_pencil_24)
+            binding.wordView.drawMode = DrawMode.ERASER
+        }
+    }
+
+    private fun onCheckResultOut(checkResult: LearnFragmentViewModel.CheckResult) {
+        if (checkResult.correct) {
+            Toast.makeText(context, "참 잘했어요!!", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "다시한번 써볼까요?", Toast.LENGTH_SHORT).show()
+            wordView.clear()
         }
     }
 
     override fun onResume() {
-        viewModel.loadPhoto(requireContext())
         super.onResume()
+        val filename = activity?.intent?.getStringExtra("captured_image_name")?: return
+        viewModel.loadPhoto(filename)
     }
 
 }
