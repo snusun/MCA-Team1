@@ -1,5 +1,6 @@
 package com.example.aganada.wordbook
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,9 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import com.example.aganada.R
 import com.example.aganada.databinding.FragmentWordBookBinding
-import android.view.Gravity
-import android.widget.*
-import androidx.core.view.setPadding
+import com.example.aganada.camera.CameraXActivity
 
 
 class WordBookFragment : Fragment() {
@@ -26,8 +25,8 @@ class WordBookFragment : Fragment() {
         val view = binding.root
 
         binding.imageButtonCamera.setOnClickListener {
-            binding.root.findNavController().navigate(
-                R.id.action_wordBookFragment_to_cameraFragment)
+            val intent = Intent(context, CameraXActivity::class.java)
+            startActivity(intent)
         }
 
         binding.imageButtonAndroid.setOnClickListener {
