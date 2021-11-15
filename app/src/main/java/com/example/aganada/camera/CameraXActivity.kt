@@ -36,6 +36,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.get
 import androidx.lifecycle.Observer
 import com.example.aganada.MainActivity
 import com.example.aganada.R
@@ -50,6 +51,7 @@ import kotlinx.android.synthetic.main.activity_vision_camerax_live_preview.*
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.*
+import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
@@ -402,12 +404,7 @@ class CameraXActivity :
                 }
                 // Case 2-1: touched inside one of the detected objects' box
                 if(targetBoundingBox != null){
-                    val bitmap = image.toBitmap()
-                    Log.d("BITMAP", "${bitmap.byteCount} ${bitmap.config} ${bitmap.generationId}}")
-                    targetBoundingBox = maintainRatio(targetBoundingBox, bitmap.width, bitmap.height)
-                    val croppedBitmap = Bitmap.createBitmap(bitmap,
-                        targetBoundingBox.left, targetBoundingBox.top,
-                        targetBoundingBox.width(), targetBoundingBox.height())
+                    targetBoundingBox = maintainRatio(targetBoundingBox, image.width, image.height)
 
                     // translate label to korean
                     var finalLabel = targetLabel
@@ -427,8 +424,25 @@ class CameraXActivity :
                     try {
                         // Get the file output stream
                         val stream: OutputStream = FileOutputStream(photoFile)
-                        // Compress bitmap
-                        croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+
+                        // Save YUV image as JPEG
+                        val yBuffer = image.planes[0].buffer // Y
+                        val vuBuffer = image.planes[2].buffer // VU
+
+                        val ySize = yBuffer.remaining()
+                        val vuSize = vuBuffer.remaining()
+
+                        val nv21 = ByteArray(ySize + vuSize)
+
+                        yBuffer.get(nv21, 0, ySize)
+                        vuBuffer.get(nv21, ySize, vuSize)
+
+                        val yuvImage = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
+                        yuvImage.compressToJpeg(Rect(targetBoundingBox.left,
+                            targetBoundingBox.top,
+                            targetBoundingBox.left + targetBoundingBox.width(),
+                            targetBoundingBox.top + targetBoundingBox.height()), 100, stream)
+
                         // Flush the stream
                         stream.flush()
                         Log.d("BUGFIX", "photo flushed - $captureEventType")
@@ -559,26 +573,6 @@ class CameraXActivity :
         rect.top = xy0.second
         rect.bottom = xy1.second
         return rect
-    }
-
-    // Extension function to convert ImageProxy to bitmap
-    private fun ImageProxy.toBitmap(): Bitmap {
-        val yBuffer = planes[0].buffer // Y
-        val vuBuffer = planes[2].buffer // VU
-
-        val ySize = yBuffer.remaining()
-        val vuSize = vuBuffer.remaining()
-
-        val nv21 = ByteArray(ySize + vuSize)
-
-        yBuffer.get(nv21, 0, ySize)
-        vuBuffer.get(nv21, ySize, vuSize)
-
-        val yuvImage = YuvImage(nv21, ImageFormat.NV21, this.width, this.height, null)
-        val out = ByteArrayOutputStream()
-        yuvImage.compressToJpeg(Rect(0, 0, yuvImage.width, yuvImage.height), 100, out)
-        val imageBytes = out.toByteArray()
-        return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
     }
 
     private val requiredPermissions: Array<String?>
