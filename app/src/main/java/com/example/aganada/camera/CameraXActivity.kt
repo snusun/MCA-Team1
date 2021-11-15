@@ -478,11 +478,14 @@ class CameraXActivity :
         }
     }
 
+    /*
+        Width must always be 4, height is 3
+     */
     private fun maintainRatio(box: Rect, bitmapWidth: Int, bitmapHeight: Int): Rect{
         Log.d("RATIO", box.flattenToString())
         var newWidth: Float;
         var newHeight: Float;
-        // find the larger edge and calculate the other in-ratio edge length
+        // find the larger edge and fix it to calculate the other in-ratio edge length
         if ( box.width() > box.height() ){
             newWidth = box.width().toFloat()
             newHeight = (newWidth * 3 / 4 + 1)
@@ -494,44 +497,31 @@ class CameraXActivity :
             Log.d("RATIO", "${box.height()} -> new width: ${(newHeight * (4/3) + 1).toFloat()} vs $newWidth")
         }
         // center the box
-        var dx = ((newWidth - box.width()) / 2 + 1).toInt()
-        var dy = ((newHeight - box.height()) / 2 + 1).toInt()
+        var dx = ((newWidth - box.width()) / 2).toInt()
+        var dy = ((newHeight - box.height()) / 2).toInt()
         box.set(box.left-dx, box.top-dy, box.right+dx, box.bottom+dy)
 
         Log.d("RATIO", "newBox $dx, $dy -> ${box.flattenToString()}")
 
         // Handle illegal argument exception
+        if (box.width() > bitmapWidth || box.height() > bitmapHeight){
+            box.set(0, 0, bitmapWidth, bitmapHeight)
+        }
         if (box.left < 0 ){
             dx = abs(box.left)
-            box.set(box.left + dx, box.top, box.right + dx, box.bottom)
+            box.set(0, box.top, box.right + dx, box.bottom)
         }
         if (box.top < 0){
             dy = abs(box.top)
-            box.set(box.left, box.top + dy, box.right, box.bottom + dy)
+            box.set(box.left, 0, box.right, box.bottom + dy)
         }
-        if (box.width() > bitmapWidth || box.height() > bitmapHeight){
-            // to simplify calculations, return bitmap width and height
-            Log.d("RATIO", box.flattenToString())
-            box.set(0, 0, bitmapWidth, bitmapHeight)
-
-
-//            if (bitmapWidth > bitmapHeight) {
-//                var bitmapWidthTmp = (bitmapHeight * 4 / 3 + 1)
-//                if (bitmapWidthTmp > bitmapWidth) {
-//                    box.set(0, 0, bitmapWidth, bitmapHeight)
-//                } else{
-            // TODO
-//                    // box.set(box.left, box.top, box.left + bitmapWidthTmp, box.top + bitmapHeight)
-//                }
-//            } else {
-//                var bitmapHeightTmp = (bitmapWidth * 3 / 4 + 1)
-//                if(bitmapHeightTmp > bitmapHeight){
-//                    box.set(0, 0, bitmapWidth, bitmapHeight)
-//                } else {
-            // TODO
-//                    // box.set(box.left, box.top, box.left + bitmapWidth, box.top + bitmapHeightTmp)
-//                }
-//            }
+        if (box.right > bitmapWidth) {
+            dx = box.right - bitmapWidth
+            box.set(box.left - dx, box.top, bitmapWidth, box.bottom)
+        }
+        if (box.bottom > bitmapHeight) {
+            dy = box.bottom - bitmapHeight
+            box.set(box.left, box.top-dy, box.right, box.bottom)
         }
         Log.d("RATIO", "return valid coordinates ${box.flattenToString()}, $bitmapHeight, $bitmapWidth")
         return box
