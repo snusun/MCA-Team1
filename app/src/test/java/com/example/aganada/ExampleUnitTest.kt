@@ -12,6 +12,12 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+        val fileName = "/sdcard/Android/media/com.example.aganada/wordbook/LABEL_2021-11-15-22-15-48-770.jpeg"
+        val label = PhotoFiles.getLabel(fileName)
+        assertEquals("LABEL", label)
+
+        val tmpFileName = "/sdcard/Android/media/com.example.aganada/tmp/LABEL_2021-11-15-22-15-48-770.jpeg"
+        val tmpLabel = PhotoFiles.getLabel(tmpFileName)
+        assertEquals("LABEL", tmpLabel)
     }
 }

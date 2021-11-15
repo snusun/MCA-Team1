@@ -6,15 +6,19 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.aganada.R
 import com.example.aganada.camera.CameraXActivity
 import com.example.aganada.databinding.FragmentTestBinding
+import com.example.aganada.learn.LearnFragmentViewModel
 import com.example.aganada.views.WordView
+import kotlinx.android.synthetic.main.fragment_test.*
 
 class TestFragment : Fragment() {
     private var _binding: FragmentTestBinding? = null
@@ -58,21 +62,22 @@ class TestFragment : Fragment() {
             undoButton.setOnClickListener { wordView.unDo() }
             redoButton.setOnClickListener { wordView.reDo() }
             checkButton.setOnClickListener {
-                Log.v("LearnFragment", "Check button clicked.")
+                this@TestFragment.viewModel.recognizeText(wordView.pathSet)
             }
+            nextButton.setOnClickListener { this@TestFragment.viewModel.getNext() }
+            prevButton.setOnClickListener { this@TestFragment.viewModel.getPrev() }
         }
     }
 
     private fun setObserve() {
         viewModel.apply {
             drawMode.observe(viewLifecycleOwner) {
-                if (it == WordView.DrawMode.PENCIL) {
-                    binding.drawModeButton.setImageResource(R.drawable.ic_baseline_eraser_24)
-                    binding.wordView.drawMode = WordView.DrawMode.PENCIL
-                } else if (it == WordView.DrawMode.ERASER) {
-                    binding.drawModeButton.setImageResource(R.drawable.ic_baseline_pencil_24)
-                    binding.wordView.drawMode = WordView.DrawMode.ERASER
-                }
+                this@TestFragment.onDrawModeChange(it)
+            }
+
+            label.observe(viewLifecycleOwner) {
+                binding.wordView.word = it
+                wordView.clear()
             }
 
             photo.observe(viewLifecycleOwner) {
@@ -81,12 +86,36 @@ class TestFragment : Fragment() {
                     .into(binding.wordImage)
                 binding.wordImage
             }
+
+            checkResult.observe(viewLifecycleOwner) {
+                onCheckResultOut(it)
+            }
+        }
+    }
+
+    private fun onDrawModeChange(drawMode: WordView.DrawMode) {
+        if (drawMode == WordView.DrawMode.PENCIL) {
+            binding.drawModeButton.setImageResource(R.drawable.ic_baseline_eraser_24)
+            binding.wordView.drawMode = WordView.DrawMode.PENCIL
+        } else if (drawMode == WordView.DrawMode.ERASER) {
+            binding.drawModeButton.setImageResource(R.drawable.ic_baseline_pencil_24)
+            binding.wordView.drawMode = WordView.DrawMode.ERASER
+        }
+    }
+
+    private fun onCheckResultOut(checkResult: LearnFragmentViewModel.CheckResult) {
+        if (checkResult.correct) {
+            Toast.makeText(context, "참 잘했어요!!", Toast.LENGTH_SHORT).show()
+            viewModel.getNext()
+        } else {
+            Toast.makeText(context, "다시한번 써볼까요?", Toast.LENGTH_SHORT).show()
+            wordView.clear()
         }
     }
 
     override fun onResume() {
-        viewModel.loadPhoto(requireContext())
         super.onResume()
+        viewModel.loadPhoto(requireContext())
     }
 
 }

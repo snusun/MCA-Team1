@@ -28,10 +28,12 @@ class WordView @JvmOverloads constructor(
     private var widthSize: Int = 0
     private var eraseSize: Float = 0f
     private var lineWidth: Float = 0f
+    private var fontSize: Float = 0f
 
     var word = ""
     set(value) {
         field = value
+        measureFontSize()
         invalidate()
     }
 
@@ -137,7 +139,7 @@ class WordView @JvmOverloads constructor(
                     eraserPoint = null
                     this.eraserPath = null
                     this.pathSet.removeAll(removeList)
-                    val removingList = removingList?: return true
+                    val removingList = removingList?: mutableListOf()
                     removingList.addAll(removeList)
                     if (removeList.isNotEmpty()) {
                         drawOpStack.add(DrawOp(DrawOpType.ERASER, removingList))
@@ -151,6 +153,15 @@ class WordView @JvmOverloads constructor(
         return true
     }
 
+    private fun measureFontSize() {
+        paint.textSize = heightSize - padding * 2
+        if (paint.measureText(word) >( widthSize - padding * 2)) {
+            paint.textSize =
+                ( widthSize - padding * 2) / paint.measureText(word) * paint.textSize
+        }
+        fontSize = paint.textSize
+    }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 //        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
@@ -162,6 +173,8 @@ class WordView @JvmOverloads constructor(
         padding = convertDpToPixel(16f, context)
         eraseSize = convertDpToPixel(8f, context)
         lineWidth = convertDpToPixel(4f, context)
+
+        measureFontSize()
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -173,7 +186,7 @@ class WordView @JvmOverloads constructor(
         run {
             paint.color = Color.parseColor("#22000000")
             paint.style = Paint.Style.FILL
-            paint.textSize = heightSize - padding * 2
+            paint.textSize = fontSize
             val maxChar = "N"
             val textX = centerX - (paint.measureText(word) / 2)
             val textY = centerY + paint.measureText(maxChar) / 2

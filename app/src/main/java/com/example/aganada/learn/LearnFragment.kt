@@ -11,7 +11,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.aganada.R
@@ -20,9 +19,6 @@ import com.example.aganada.views.WordView.DrawMode
 import com.example.aganada.databinding.FragmentLearnBinding
 import kotlinx.android.synthetic.main.fragment_learn.view.*
 import kotlinx.android.synthetic.main.fragment_test.*
-import java.io.File
-import java.util.regex.Matcher
-import java.util.regex.Pattern
 
 class LearnFragment : Fragment() {
     private var _binding: FragmentLearnBinding? = null
@@ -107,6 +103,8 @@ class LearnFragment : Fragment() {
     private fun onCheckResultOut(checkResult: LearnFragmentViewModel.CheckResult) {
         if (checkResult.correct) {
             Toast.makeText(context, "참 잘했어요!!", Toast.LENGTH_SHORT).show()
+            viewModel.movePhotoToWordBook()
+            findNavController().navigate(R.id.action_learnFragment_to_wordBookFragment)
         } else {
             Toast.makeText(context, "다시한번 써볼까요?", Toast.LENGTH_SHORT).show()
             wordView.clear()
