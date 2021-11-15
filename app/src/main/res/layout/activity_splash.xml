@@ -7,29 +7,21 @@
     android:background="@color/bg_700"
     tools:context=".SplashActivity">
 
-    <ImageView
-        android:id="@+id/logo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@mipmap/ic_baby_256"
-        android:maxHeight="35dp"
-        android:maxWidth="35dp"
-        android:adjustViewBounds="true"
-        android:scaleType="fitCenter"
-        tools:ignore="MissingConstraints" />
-
     <TextView
         android:id="@+id/textView_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/gosanja"
-        android:text="아가나다"
+        android:gravity="center"
         android:letterSpacing="0.1"
+        android:text="아가나다"
+        android:textAlignment="center"
         android:textColor="@color/white"
-        android:textStyle="bold"
         android:textSize="48sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
