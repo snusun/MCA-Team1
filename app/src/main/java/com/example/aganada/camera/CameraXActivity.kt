@@ -107,6 +107,7 @@ class CameraXActivity :
     private var captureEventType: Int? = null
     private var ko_labels: JSONObject? = null
 
+    @RequiresApi(VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate")
@@ -157,16 +158,15 @@ class CameraXActivity :
         return JSONObject(jsonString)
     }
 
+    @RequiresApi(VERSION_CODES.N)
     private fun getOutputDirectory(): File{
-        // TODO: change the following to MediaStore
-        val mediaDir = externalMediaDirs.firstOrNull()?.let {
-            File(it, "tmp").apply { mkdirs() }
+        var dir = File(dataDir.canonicalPath+File.separator+"files/tmp")
+        if(!dir.exists()) {
+            dir.mkdir()
+            Log.d("OUTPUTDIR", "make directory")
         }
-        Log.d("HYUNSOO", "externalMedia"+externalMediaDirs.firstOrNull())
-        Log.d("HYUNSOO", mediaDir.toString()+ " "+filesDir)
-
-        return if (mediaDir != null && mediaDir.exists()) mediaDir
-               else filesDir
+        Log.d("OUTPUTDIR", dir.toString())
+        return dir
     }
 
     private fun takePhoto(event: MotionEvent): Boolean{
@@ -511,7 +511,7 @@ class CameraXActivity :
 
             // Close stream
             stream.close()
-            Log.d("11-19", "Successfully saved image")
+            Log.d("11-19", "Successfully saved image at ${photoFile.absoluteFile}")
             Toast.makeText(baseContext, "Saved image", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, MainActivity::class.java).apply {
                 putExtra("captured_image_name", Uri.parse(photoFile.absolutePath).toString())
