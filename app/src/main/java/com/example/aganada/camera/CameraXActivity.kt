@@ -364,7 +364,7 @@ class CameraXActivity :
                     if(capture){
                         capture = false
                         Log.d("HYUNSOO", "capture is on -> save image -$capture")
-                        saveImage(imageProxy)
+                        capturePhoto(imageProxy)
                     }
 
                 } catch (e: MlKitException) {
@@ -376,8 +376,7 @@ class CameraXActivity :
         cameraProvider!!.bindToLifecycle(this, cameraSelector!!, analysisUseCase)
     }
 
-    private fun saveImage(image: ImageProxy){
-        capture = false
+    private fun getDetectionInfo(image: ImageProxy): Pair<Rect?, String?>{
         Log.d("HYUNSOO", "saveImage -$capture")
         if(objectDetectorProcessor != null){
             Log.d(TAG, "ObjectDetectorProcessor properly instantiated")
@@ -421,76 +420,106 @@ class CameraXActivity :
                 // Case 2-1: touched inside one of the detected objects' box
                 if(targetBoundingBox != null){
                     targetBoundingBox = maintainRatio(targetBoundingBox, image.width, image.height)
-
-                    // translate label to korean
-                    var finalLabel = targetLabel
-                    try {
-                        finalLabel = ko_labels!!.get(targetLabel) as String
-                        Log.d("TRANSLATION", "$finalLabel")
-                    } catch (e: JSONException){
-                        e.printStackTrace()
-                    }
-
-                    // save image to temp directory
-                    // TODO: This method is deprecated. Change this to using MediaFile
-                    val photoFile = File(
-                        outputDirectory,
-                        finalLabel + "_" + SimpleDateFormat(FILENAME_FORMAT, Locale.US
-                        ).format(System.currentTimeMillis()) + ".jpeg")
-                    try {
-                        // Get the file output stream
-                        val stream: OutputStream = FileOutputStream(photoFile)
-
-                        // Save YUV image as JPEG
-                        val yBuffer = image.planes[0].buffer // Y
-                        val vuBuffer = image.planes[2].buffer // VU
-
-                        val ySize = yBuffer.remaining()
-                        val vuSize = vuBuffer.remaining()
-
-                        val nv21 = ByteArray(ySize + vuSize)
-
-                        yBuffer.get(nv21, 0, ySize)
-                        vuBuffer.get(nv21, ySize, vuSize)
-
-                        val yuvImage = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
-                        yuvImage.compressToJpeg(Rect(targetBoundingBox.left,
-                            targetBoundingBox.top,
-                            targetBoundingBox.left + targetBoundingBox.width(),
-                            targetBoundingBox.top + targetBoundingBox.height()), 100, stream)
-
-                        // Flush the stream
-                        stream.flush()
-                        Log.d("BUGFIX", "photo flushed - $captureEventType")
-                        // Close stream
-                        stream.close()
-                    } catch (e: IOException){ // Catch the exception
-                        e.printStackTrace()
-                    }
-
-                    // Navigate to main activity and pass the file name
-                    Log.d("HYUNSOO", "Saved image: ${Uri.parse(photoFile.absolutePath)} - $capture")
-                    Toast.makeText(baseContext, "Successfully saved image. Must navigate to next view",
-                        Toast.LENGTH_LONG).show()
-                    val intent = Intent(this, MainActivity::class.java).apply {
-                        putExtra("captured_image_name", Uri.parse(photoFile.absolutePath).toString())
-                    }
-                    startActivity(intent)
-
+                    return Pair(targetBoundingBox, targetLabel)
                 }
                 // Case 2-2: touched outside all detected objects' boxes
                 else{
                     Log.d("HYUNSOO", "targetboundingbox is null... touched outside a valid box" +
                             captureTouchCoords.toString() + ", " + targetBoundingBox.toString()
                     )
-                    Toast.makeText(baseContext, "Touched outside a valid box. Please touch inside a box.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(baseContext, "Touched outside a valid box. Please touch inside a box.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
         else{
             Log.e(TAG, "ObjectDetectorProcessor was not properly instantiated")
-//            Toast.makeText(baseContext, "Object Detector was not properly instantiated", Toast.LENGTH_SHORT).show()
-            return
+            Toast.makeText(baseContext, "Object Detector was not properly instantiated", Toast.LENGTH_SHORT).show()
+        }
+        return Pair(null, null)
+    }
+
+    private fun capturePhoto(image: ImageProxy){
+        val imageCapture = captureUseCase ?: return
+        // Save temporary image file using CameraX capture
+        val tempFile = File(
+            outputDirectory, "temp.jpeg")
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(tempFile).build()
+        imageCapture.takePicture(
+            outputOptions, ContextCompat.getMainExecutor(this), object : ImageCapture.OnImageSavedCallback {
+                override fun onError(exc: ImageCaptureException) {
+                    Log.e("11-19", "Photo capture failed: ${exc.message}", exc)
+                }
+
+                @RequiresApi(VERSION_CODES.P)
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    cropAndSaveImage(image)
+                }
+            })
+    }
+
+    @RequiresApi(VERSION_CODES.P)
+    private fun cropAndSaveImage(image: ImageProxy){
+        // Get detected object's info
+        var (targetBoundingBox, targetLabel) = getDetectionInfo(image)!!
+        if(targetBoundingBox == null) return
+        var finalLabel = targetLabel
+        try {
+            finalLabel = ko_labels!!.get(targetLabel) as String
+            Log.d("TRANSLATION", "$finalLabel")
+        } catch (e: JSONException){
+            e.printStackTrace()
+        }
+
+        // Create final output file stream
+        val photoFile = File(
+            outputDirectory,
+            finalLabel + "_" + SimpleDateFormat(FILENAME_FORMAT, Locale.US
+            ).format(System.currentTimeMillis()) + ".jpeg")
+
+        // Get image's bitmap and crop with adjustment
+        val tempFile = File(
+            outputDirectory, "temp.jpeg");
+        val source = ImageDecoder.createSource(tempFile);
+        val bitmap = ImageDecoder.decodeBitmap(source);
+        Log.d("11-19", "targetBoundingBox before: ${targetBoundingBox.left}, ${targetBoundingBox.right}," +
+                "${targetBoundingBox.top}, ${targetBoundingBox.bottom}")
+        targetBoundingBox = Rect(targetBoundingBox.left * bitmap.width / image.width,
+        targetBoundingBox.top * bitmap.height / image.height,
+            targetBoundingBox.right * bitmap.width / image.width,
+            targetBoundingBox.bottom * bitmap.height / image.height)
+        Log.d("11-19", "image: ${image.width}, ${image.height}")
+        Log.d("11-19", "bitmap: ${bitmap.width}, ${bitmap.height}")
+        Log.d("11-19", "targetBoundingBox after: ${targetBoundingBox.left}, ${targetBoundingBox.right}," +
+                "${targetBoundingBox.top}, ${targetBoundingBox.bottom}")
+        val croppedBitmap = Bitmap.createBitmap(bitmap,
+            targetBoundingBox.left, targetBoundingBox.top,
+            targetBoundingBox.width(), targetBoundingBox.height())
+
+        Log.d("11-19", "image: ${image.width}, ${image.height}")
+        Log.d("11-19", "targetBoundingBox: ${targetBoundingBox.left}, ${targetBoundingBox.right}," +
+                "${targetBoundingBox.top}, ${targetBoundingBox.bottom}")
+        Log.d("11-19", "bitmap: ${bitmap.width}, ${bitmap.height}")
+        Log.d("11-19", "croppedBitmap: ${croppedBitmap.width}, ${croppedBitmap.height}")
+
+        // Save image to file
+        try {
+            val stream: OutputStream = FileOutputStream(photoFile)
+
+            croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+            // Flush the stream
+            stream.flush()
+
+            // Close stream
+            stream.close()
+            Log.d("11-19", "Successfully saved image")
+            Toast.makeText(baseContext, "Saved image", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, MainActivity::class.java).apply {
+                putExtra("captured_image_name", Uri.parse(photoFile.absolutePath).toString())
+            }
+            startActivity(intent)
+
+        } catch (e: IOException){ // Catch the exception
+            e.printStackTrace()
         }
     }
 
