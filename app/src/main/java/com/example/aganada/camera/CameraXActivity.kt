@@ -36,7 +36,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.get
 import androidx.lifecycle.Observer
 import com.example.aganada.MainActivity
 import com.example.aganada.R
@@ -51,12 +50,12 @@ import kotlinx.android.synthetic.main.activity_vision_camerax_live_preview.*
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.*
-import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import android.graphics.Bitmap
 
 //import com.google.mlkit.vision.demo.VisionImageProcessor
 /*
@@ -95,6 +94,7 @@ class CameraXActivity :
     private var cameraProvider: ProcessCameraProvider? = null
     private var previewUseCase: Preview? = null
     private var analysisUseCase: ImageAnalysis? = null
+    private var captureUseCase: ImageCapture? = null
     private var imageProcessor: VisionImageProcessor? = null
     private var objectDetectorProcessor: ObjectDetectorProcessor? = null
     private var needUpdateGraphicOverlayImageSourceInfo = false
@@ -257,6 +257,7 @@ class CameraXActivity :
             cameraProvider!!.unbindAll()
             bindPreviewUseCase()
             bindAnalysisUseCase()
+            bindCaptureUseCase()
         }
     }
 
@@ -276,10 +277,25 @@ class CameraXActivity :
         if (targetResolution != null) {
             builder.setTargetResolution(targetResolution)
         }
+
         previewUseCase = builder.build()
         previewUseCase!!.setSurfaceProvider(previewView!!.getSurfaceProvider())
         cameraProvider!!.bindToLifecycle( this, cameraSelector!!, previewUseCase)
     }
+    private fun bindCaptureUseCase() {
+        if (cameraProvider == null) {
+            return
+        }
+        if (captureUseCase != null) {
+            cameraProvider!!.unbind(captureUseCase)
+        }
+
+        val builder = ImageCapture.Builder()
+
+        captureUseCase = builder.build()
+        cameraProvider!!.bindToLifecycle( this, cameraSelector!!, captureUseCase)
+    }
+
 
     private fun bindAnalysisUseCase() {
         if (cameraProvider == null) {
