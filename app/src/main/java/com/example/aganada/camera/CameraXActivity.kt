@@ -384,8 +384,8 @@ class CameraXActivity :
             if(objectDetectorProcessor?.getDetectedObjects().isNullOrEmpty()){
                 Log.e(TAG, "Tried to save the image of a non-detected object")
                 Toast.makeText(baseContext, "No objects were detected. Please point the camera to a valid object",
-                    Toast.LENGTH_LONG).show()
-                return
+                    Toast.LENGTH_SHORT).show()
+                return Pair(null, null)
             }
             // Case 2: there are detected objects in current image
             val detectedObjects = objectDetectorProcessor?.getDetectedObjects()
@@ -566,7 +566,7 @@ class CameraXActivity :
         }
         if (box.bottom > bitmapHeight) {
             dy = box.bottom - bitmapHeight
-            box.set(box.left, box.top-dy, box.right, box.bottom)
+            box.set(box.left, box.top-dy, box.right, bitmapHeight)
         }
         Log.d("RATIO", "return valid coordinates ${box.flattenToString()}, $bitmapHeight, $bitmapWidth")
         return box
