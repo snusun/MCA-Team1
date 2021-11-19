@@ -1,6 +1,7 @@
 package com.example.aganada.wordbook
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.DisplayMetrics
 import android.view.Gravity
 import android.view.View
@@ -24,11 +25,11 @@ class FlipCard private constructor(private val layout: GridLayout,
         const val ANGLE_TEXT_HIDE = 270f
         const val CARD_PADDING = 4.0f
 
-        fun create(layout: GridLayout, imageId: Int, text: String, duration: Long = 300) : FlipCard {
+        fun create(layout: GridLayout, bitmap: Bitmap, text: String, duration: Long = 300) : FlipCard {
             val imageView = ImageView(layout.context)
             val textView = TextView(layout.context)
 
-            imageView.setImageResource(imageId)
+            imageView.setImageBitmap(bitmap)
             textView.text = text
             textView.textAlignment = View.TEXT_ALIGNMENT_CENTER
             textView.gravity = Gravity.CENTER
