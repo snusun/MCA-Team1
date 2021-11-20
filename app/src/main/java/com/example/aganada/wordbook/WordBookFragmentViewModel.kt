@@ -9,6 +9,8 @@ import android.text.Layout
 import android.widget.GridLayout
 import java.io.File
 import java.nio.file.Files
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 class WordBookFragmentViewModel: ViewModel()  {
 
@@ -23,29 +25,26 @@ class WordBookFragmentViewModel: ViewModel()  {
     }
 
     fun loadImages(layout: GridLayout, dataDir: File?) {
-        if (dataDir == null) return
-
+        dataDir?: return
         val dir = getOutputDirectory(dataDir)
+        Log.d("JHTEST", dir.absolutePath)
         dir.walk()
             .filter { item -> item.isFile }
-            .filter { item -> item.toString().endsWith(".jpg") }
+            .filter { item -> item.toString().endsWith(".jpeg") }
             .forEach {
-                val bitmap = BitmapFactory.decodeFile(it.absolutePath)
-                FlipCard.create(layout, bitmap, "Test")
+                Log.d("JHTEST", it.absolutePath)
+                val label = parseLabel(it.absolutePath)
+                if (label != null) FlipCard.create(layout, it.absolutePath, label).attach()
             }
     }
 
-    fun printListDir(dataDir: File?) {
-        if (dataDir == null) {
-            Log.d("JHTEST", "Null DataDir")
-            return
-        }
-        val dir = getOutputDirectory(dataDir)
-        Log.d("JHTEST", dir.toString())
-        val paths = dir.walk()
-            .filter { item -> item.isFile }
-            .filter { item -> item.toString().endsWith(".jpg") }
+    private fun parseLabel(filename: String): String? {
+        val pattern: Pattern = Pattern.compile("^.+tmp/(.+)_.+\\.jpeg$")
+        val matches: Matcher = pattern.matcher(filename)
+        if (matches.matches()) return matches.group(1)
 
-        println(paths)
+        Log.v("JHTEST", "$filename no Label found.")
+        return null
     }
+
 }

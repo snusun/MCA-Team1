@@ -2,6 +2,7 @@ package com.example.aganada.wordbook
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.DisplayMetrics
 import android.view.Gravity
 import android.view.View
@@ -9,11 +10,13 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.setPadding
 import com.example.aganada.R
+import java.io.File
 import android.widget.PopupWindow as PopupWindow 
 
 class FlipCard private constructor(private val layout: GridLayout,
                                    private val imageView: ImageView,
                                    private val textView: TextView,
+                                   private val filename: String,
                                    private val duration: Long) {
 
     private val frameLayout = FrameLayout(layout.context)
@@ -25,16 +28,22 @@ class FlipCard private constructor(private val layout: GridLayout,
         const val ANGLE_TEXT_HIDE = 270f
         const val CARD_PADDING = 4.0f
 
-        fun create(layout: GridLayout, bitmap: Bitmap, text: String, duration: Long = 300) : FlipCard {
+        fun create(layout: GridLayout, filename: String,
+                   text: String, duration: Long = 300) : FlipCard {
             val imageView = ImageView(layout.context)
             val textView = TextView(layout.context)
 
+            val bitmap = BitmapFactory.Options().run {
+                inSampleSize = 8
+                BitmapFactory.decodeFile(filename, this)
+            }
             imageView.setImageBitmap(bitmap)
+            imageView.clipToOutline = true
             textView.text = text
             textView.textAlignment = View.TEXT_ALIGNMENT_CENTER
             textView.gravity = Gravity.CENTER
 
-            return FlipCard(layout, imageView, textView, duration)
+            return FlipCard(layout, imageView, textView, filename, duration)
         }
     }
 
@@ -44,7 +53,7 @@ class FlipCard private constructor(private val layout: GridLayout,
         frameLayout.setPadding(convertDpToPixel(CARD_PADDING, layout.context).toInt())
         frameLayout.layoutParams = LinearLayout.LayoutParams(width, height)
 
-        imageView.setBackgroundResource(R.drawable.background_card)
+        imageView.setBackgroundResource(R.drawable.background_card_image)
         textView.setBackgroundResource(R.drawable.background_card)
 
         imageView.setOnClickListener { rotateImageToText() }
@@ -64,7 +73,7 @@ class FlipCard private constructor(private val layout: GridLayout,
     }
 
     private fun longClick(): Boolean {
-        detach()
+        remove()
         return false
     }
 
@@ -97,6 +106,12 @@ class FlipCard private constructor(private val layout: GridLayout,
             setVisibility(showImage = true)
             imageView.animate().rotationY(ANGLE_IMAGE_SHOW).duration = duration
         }
+    }
+
+    fun remove() {
+        detach()
+        val file = File(filename)
+        if (file.isFile and file.exists()) file.delete()
     }
 
     fun detach() {

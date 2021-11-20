@@ -50,9 +50,9 @@ class WordBookFragment : Fragment() {
 
         binding.addButton.setOnClickListener {
             viewModel.loadImages(binding.gridLayout, activity?.dataDir)
-            viewModel.printListDir(activity?.dataDir)
         }
 
         return view
     }
+
 }
