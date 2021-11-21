@@ -32,7 +32,7 @@ object PhotoFiles {
     }
 
     fun getWordbook(context: Context): List<File> {
-        val mediaDir = context.externalMediaDirs.firstOrNull()?: return listOf()
+        val mediaDir = File(context.dataDir.canonicalPath, "files")
         val wordbookDir = File(mediaDir, WORDBOOK)
 
         val files = wordbookDir.listFiles(FileFilter {
