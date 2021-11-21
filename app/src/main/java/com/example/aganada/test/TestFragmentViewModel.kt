@@ -24,8 +24,17 @@ class TestFragmentViewModel: ViewModel() {
     private val _label: MutableLiveData<String> = MutableLiveData()
     val label: LiveData<String> = _label
 
+    private val _index: MutableLiveData<Int> = MutableLiveData()
+    val index: LiveData<Int> = _index
+
+    private val _wordbook: MutableLiveData<List<File>> = MutableLiveData(listOf())
+    val wordbook: LiveData<List<File>> = _wordbook
+
     private val _checkResult: MutableLiveData<LearnFragmentViewModel.CheckResult> = MutableLiveData()
     val checkResult: LiveData<LearnFragmentViewModel.CheckResult> = _checkResult
+
+    private val _shuffled: MutableLiveData<Boolean> = MutableLiveData(false)
+    val shuffled: LiveData<Boolean> = _shuffled
 
     private val inkManager: InkManager = InkManager().also {
         it.setActiveModel("ko")
@@ -41,23 +50,34 @@ class TestFragmentViewModel: ViewModel() {
         })
     }
 
-    private lateinit var wordbook: List<File>
-    private var index = 0;
-
     private fun setIndex(index: Int) {
-        if (index >= 0 && index < wordbook.size) {
-            this.index = index
-            val file = wordbook[index]
+        if (index >= 0 && index < wordbook.value!!.size) {
+            val file = wordbook.value!![index]
             val label = PhotoFiles.getLabel(file.absolutePath)
+            _index.value = index
             _photo.value = file
             _label.value = label
         }
     }
 
     fun loadPhoto(context: Context) {
-        wordbook = PhotoFiles.getWordbook(context).shuffled()
+        val wordbook = PhotoFiles.getWordbook(context)
         Log.d("wordbook", "wordbook size: ${wordbook.size} label: ${wordbook.firstOrNull()?.absolutePath?: ""}")
+        _shuffled.value = false
+        _wordbook.value = wordbook
         setIndex(0)
+    }
+
+    private fun sortPhoto(decent: Boolean) {
+        val sorted = PhotoFiles.sortWordbook(wordbook.value?: listOf())
+        _wordbook.value = if (decent) sorted.reversed() else sorted
+        _shuffled.value = false
+    }
+
+    private fun shufflePhoto() {
+        val shuffled = wordbook.value?.shuffled() ?: listOf()
+        _wordbook.value = shuffled
+        _shuffled.value = true
     }
 
     fun onModeButtonClicked(view: View) {
@@ -90,11 +110,20 @@ class TestFragmentViewModel: ViewModel() {
     }
 
     fun getPrev() {
-        this.setIndex(index - 1)
+        this.setIndex(index.value!! - 1)
     }
 
     fun getNext() {
-        this.setIndex(index + 1)
+        this.setIndex(index.value!! + 1)
+    }
+
+    fun onShuffleClicked() {
+        if (shuffled.value == true) {
+            this.sortPhoto(false)
+        } else {
+            this.shufflePhoto()
+        }
+        setIndex(0)
     }
 
     companion object {

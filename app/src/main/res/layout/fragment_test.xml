@@ -151,6 +151,19 @@
         </LinearLayout>
 
         <ImageButton
+            android:id="@+id/shuffle_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="16dp"
+            android:background="@null"
+            android:contentDescription="@string/check"
+            android:padding="4dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_baseline_shuffle_24"
+            app:layout_constraintEnd_toStartOf="@+id/check_button"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
             android:id="@+id/check_button"
             android:layout_width="48dp"
             android:layout_height="48dp"

@@ -1,7 +1,6 @@
 package com.example.aganada
 
 import android.content.Context
-import android.nfc.FormatException
 import android.util.Log
 import java.io.File
 import java.io.FileFilter
@@ -10,7 +9,7 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 object PhotoFiles {
-    const val WORDBOOK = "wordbook"
+    private const val WORDBOOK = "wordbook"
 
     fun moveTempToWordbook(tempFile: File) {
         val wordbook = File(tempFile.parentFile?.parent, WORDBOOK)
@@ -23,7 +22,7 @@ object PhotoFiles {
     }
 
     fun getLabel(fileName: String): String {
-        val pattern: Pattern = Pattern.compile("^.+(tmp|${WORDBOOK})/(.+)_.+\\.jpeg$")
+        val pattern: Pattern = Pattern.compile("^.+(tmp|${WORDBOOK})/(.+)_(.+)\\.jpeg$")
         val matches: Matcher = pattern.matcher(fileName)
         return if (matches.matches()) {
             matches.group(2)?: ""
@@ -40,6 +39,19 @@ object PhotoFiles {
             val label = getLabel(it.absolutePath)
             return@FileFilter label.isNotBlank()
         })?: return listOf()
-        return files.toList()
+        return sortWordbook(files.asIterable())
     }
+
+    fun sortWordbook(files: Iterable<File>): List<File> {
+        val pattern: Pattern = Pattern.compile("^.+(tmp|${WORDBOOK})/(.+)_(.+)\\.jpeg$")
+        return files.sortedBy{
+            val matches: Matcher = pattern.matcher(it.absolutePath)
+            if (matches.matches()) {
+                matches.group(3)?: ""
+            } else {
+                ""
+            }
+        }
+    }
+
 }
