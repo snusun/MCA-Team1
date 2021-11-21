@@ -55,6 +55,7 @@ import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import android.graphics.Bitmap
 
 //import com.google.mlkit.vision.demo.VisionImageProcessor
 /*
@@ -93,6 +94,7 @@ class CameraXActivity :
     private var cameraProvider: ProcessCameraProvider? = null
     private var previewUseCase: Preview? = null
     private var analysisUseCase: ImageAnalysis? = null
+    private var captureUseCase: ImageCapture? = null
     private var imageProcessor: VisionImageProcessor? = null
     private var objectDetectorProcessor: ObjectDetectorProcessor? = null
     private var needUpdateGraphicOverlayImageSourceInfo = false
@@ -105,6 +107,7 @@ class CameraXActivity :
     private var captureEventType: Int? = null
     private var ko_labels: JSONObject? = null
 
+    @RequiresApi(VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate")
@@ -155,16 +158,15 @@ class CameraXActivity :
         return JSONObject(jsonString)
     }
 
+    @RequiresApi(VERSION_CODES.N)
     private fun getOutputDirectory(): File{
-        // TODO: change the following to MediaStore
-        val mediaDir = externalMediaDirs.firstOrNull()?.let {
-            File(it, "tmp").apply { mkdirs() }
+        var dir = File(dataDir.canonicalPath+File.separator+"files/tmp")
+        if(!dir.exists()) {
+            dir.mkdir()
+            Log.d("OUTPUTDIR", "make directory")
         }
-        Log.d("HYUNSOO", "externalMedia"+externalMediaDirs.firstOrNull())
-        Log.d("HYUNSOO", mediaDir.toString()+ " "+filesDir)
-
-        return if (mediaDir != null && mediaDir.exists()) mediaDir
-               else filesDir
+        Log.d("OUTPUTDIR", dir.toString())
+        return dir
     }
 
     private fun takePhoto(event: MotionEvent): Boolean{
@@ -255,6 +257,7 @@ class CameraXActivity :
             cameraProvider!!.unbindAll()
             bindPreviewUseCase()
             bindAnalysisUseCase()
+            bindCaptureUseCase()
         }
     }
 
@@ -274,10 +277,25 @@ class CameraXActivity :
         if (targetResolution != null) {
             builder.setTargetResolution(targetResolution)
         }
+
         previewUseCase = builder.build()
         previewUseCase!!.setSurfaceProvider(previewView!!.getSurfaceProvider())
         cameraProvider!!.bindToLifecycle( this, cameraSelector!!, previewUseCase)
     }
+    private fun bindCaptureUseCase() {
+        if (cameraProvider == null) {
+            return
+        }
+        if (captureUseCase != null) {
+            cameraProvider!!.unbind(captureUseCase)
+        }
+
+        val builder = ImageCapture.Builder()
+
+        captureUseCase = builder.build()
+        cameraProvider!!.bindToLifecycle( this, cameraSelector!!, captureUseCase)
+    }
+
 
     private fun bindAnalysisUseCase() {
         if (cameraProvider == null) {
@@ -346,7 +364,7 @@ class CameraXActivity :
                     if(capture){
                         capture = false
                         Log.d("HYUNSOO", "capture is on -> save image -$capture")
-                        saveImage(imageProxy)
+                        capturePhoto(imageProxy)
                     }
 
                 } catch (e: MlKitException) {
@@ -358,8 +376,7 @@ class CameraXActivity :
         cameraProvider!!.bindToLifecycle(this, cameraSelector!!, analysisUseCase)
     }
 
-    private fun saveImage(image: ImageProxy){
-        capture = false
+    private fun getDetectionInfo(image: ImageProxy): Pair<Rect?, String?>{
         Log.d("HYUNSOO", "saveImage -$capture")
         if(objectDetectorProcessor != null){
             Log.d(TAG, "ObjectDetectorProcessor properly instantiated")
@@ -367,8 +384,8 @@ class CameraXActivity :
             if(objectDetectorProcessor?.getDetectedObjects().isNullOrEmpty()){
                 Log.e(TAG, "Tried to save the image of a non-detected object")
                 Toast.makeText(baseContext, "No objects were detected. Please point the camera to a valid object",
-                    Toast.LENGTH_LONG).show()
-                return
+                    Toast.LENGTH_SHORT).show()
+                return Pair(null, null)
             }
             // Case 2: there are detected objects in current image
             val detectedObjects = objectDetectorProcessor?.getDetectedObjects()
@@ -402,73 +419,118 @@ class CameraXActivity :
                 }
                 // Case 2-1: touched inside one of the detected objects' box
                 if(targetBoundingBox != null){
-                    val bitmap = image.toBitmap()
-                    Log.d("BITMAP", "${bitmap.byteCount} ${bitmap.config} ${bitmap.generationId}}")
-                    targetBoundingBox = maintainRatio(targetBoundingBox, bitmap.width, bitmap.height)
-                    val croppedBitmap = Bitmap.createBitmap(bitmap,
-                        targetBoundingBox.left, targetBoundingBox.top,
-                        targetBoundingBox.width(), targetBoundingBox.height())
-
-                    // translate label to korean
-                    var finalLabel = targetLabel
-                    try {
-                        finalLabel = ko_labels!!.get(targetLabel) as String
-                        Log.d("TRANSLATION", "$finalLabel")
-                    } catch (e: JSONException){
-                        e.printStackTrace()
-                    }
-
-                    // save image to temp directory
-                    // TODO: This method is deprecated. Change this to using MediaFile
-                    val photoFile = File(
-                        outputDirectory,
-                        finalLabel + "_" + SimpleDateFormat(FILENAME_FORMAT, Locale.US
-                        ).format(System.currentTimeMillis()) + ".jpeg")
-                    try {
-                        // Get the file output stream
-                        val stream: OutputStream = FileOutputStream(photoFile)
-                        // Compress bitmap
-                        croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-                        // Flush the stream
-                        stream.flush()
-                        Log.d("BUGFIX", "photo flushed - $captureEventType")
-                        // Close stream
-                        stream.close()
-                    } catch (e: IOException){ // Catch the exception
-                        e.printStackTrace()
-                    }
-
-                    // Navigate to main activity and pass the file name
-                    Log.d("HYUNSOO", "Saved image: ${Uri.parse(photoFile.absolutePath)} - $capture")
-                    Toast.makeText(baseContext, "Successfully saved image. Must navigate to next view",
-                        Toast.LENGTH_LONG).show()
-                    val intent = Intent(this, MainActivity::class.java).apply {
-                        putExtra("captured_image_name", Uri.parse(photoFile.absolutePath).toString())
-                    }
-                    startActivity(intent)
-
+                    targetBoundingBox = maintainRatio(targetBoundingBox, image.width, image.height)
+                    return Pair(targetBoundingBox, targetLabel)
                 }
                 // Case 2-2: touched outside all detected objects' boxes
                 else{
                     Log.d("HYUNSOO", "targetboundingbox is null... touched outside a valid box" +
                             captureTouchCoords.toString() + ", " + targetBoundingBox.toString()
                     )
-                    Toast.makeText(baseContext, "Touched outside a valid box. Please touch inside a box.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(baseContext, "Touched outside a valid box. Please touch inside a box.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
         else{
             Log.e(TAG, "ObjectDetectorProcessor was not properly instantiated")
-//            Toast.makeText(baseContext, "Object Detector was not properly instantiated", Toast.LENGTH_SHORT).show()
-            return
+            Toast.makeText(baseContext, "Object Detector was not properly instantiated", Toast.LENGTH_SHORT).show()
+        }
+        return Pair(null, null)
+    }
+
+    private fun capturePhoto(image: ImageProxy){
+        val imageCapture = captureUseCase ?: return
+        // Save temporary image file using CameraX capture
+        val tempFile = File(
+            outputDirectory, "temp.jpeg")
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(tempFile).build()
+        imageCapture.takePicture(
+            outputOptions, ContextCompat.getMainExecutor(this), object : ImageCapture.OnImageSavedCallback {
+                override fun onError(exc: ImageCaptureException) {
+                    Log.e("11-19", "Photo capture failed: ${exc.message}", exc)
+                }
+
+                @RequiresApi(VERSION_CODES.P)
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    cropAndSaveImage(image)
+                }
+            })
+    }
+
+    @RequiresApi(VERSION_CODES.P)
+    private fun cropAndSaveImage(image: ImageProxy){
+        // Get detected object's info
+        var (targetBoundingBox, targetLabel) = getDetectionInfo(image)!!
+        if(targetBoundingBox == null) return
+        var finalLabel = targetLabel
+        try {
+            finalLabel = ko_labels!!.get(targetLabel) as String
+            Log.d("TRANSLATION", "$finalLabel")
+        } catch (e: JSONException){
+            e.printStackTrace()
+        }
+
+        // Create final output file stream
+        val photoFile = File(
+            outputDirectory,
+            finalLabel + "_" + SimpleDateFormat(FILENAME_FORMAT, Locale.US
+            ).format(System.currentTimeMillis()) + ".jpeg")
+
+        // Get image's bitmap and crop with adjustment
+        val tempFile = File(
+            outputDirectory, "temp.jpeg");
+        val source = ImageDecoder.createSource(tempFile);
+        val bitmap = ImageDecoder.decodeBitmap(source);
+        Log.d("11-19", "targetBoundingBox before: ${targetBoundingBox.left}, ${targetBoundingBox.right}," +
+                "${targetBoundingBox.top}, ${targetBoundingBox.bottom}")
+        targetBoundingBox = Rect(targetBoundingBox.left * bitmap.width / image.width,
+        targetBoundingBox.top * bitmap.height / image.height,
+            targetBoundingBox.right * bitmap.width / image.width,
+            targetBoundingBox.bottom * bitmap.height / image.height)
+        Log.d("11-19", "image: ${image.width}, ${image.height}")
+        Log.d("11-19", "bitmap: ${bitmap.width}, ${bitmap.height}")
+        Log.d("11-19", "targetBoundingBox after: ${targetBoundingBox.left}, ${targetBoundingBox.right}," +
+                "${targetBoundingBox.top}, ${targetBoundingBox.bottom}")
+        val croppedBitmap = Bitmap.createBitmap(bitmap,
+            targetBoundingBox.left, targetBoundingBox.top,
+            targetBoundingBox.width(), targetBoundingBox.height())
+
+        Log.d("11-19", "image: ${image.width}, ${image.height}")
+        Log.d("11-19", "targetBoundingBox: ${targetBoundingBox.left}, ${targetBoundingBox.right}," +
+                "${targetBoundingBox.top}, ${targetBoundingBox.bottom}")
+        Log.d("11-19", "bitmap: ${bitmap.width}, ${bitmap.height}")
+        Log.d("11-19", "croppedBitmap: ${croppedBitmap.width}, ${croppedBitmap.height}")
+
+        // Save image to file
+        try {
+            val stream: OutputStream = FileOutputStream(photoFile)
+
+            croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+            // Flush the stream
+            stream.flush()
+
+            // Close stream
+            stream.close()
+            Log.d("11-19", "Successfully saved image at ${photoFile.absoluteFile}")
+            Toast.makeText(baseContext, "Saved image", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, MainActivity::class.java).apply {
+                putExtra("captured_image_name", Uri.parse(photoFile.absolutePath).toString())
+            }
+            startActivity(intent)
+
+        } catch (e: IOException){ // Catch the exception
+            e.printStackTrace()
         }
     }
 
+    /*
+        Width must always be 4, height is 3
+     */
     private fun maintainRatio(box: Rect, bitmapWidth: Int, bitmapHeight: Int): Rect{
         Log.d("RATIO", box.flattenToString())
         var newWidth: Float;
         var newHeight: Float;
-        // find the larger edge and calculate the other in-ratio edge length
+        // find the larger edge and fix it to calculate the other in-ratio edge length
         if ( box.width() > box.height() ){
             newWidth = box.width().toFloat()
             newHeight = (newWidth * 3 / 4 + 1)
@@ -480,44 +542,31 @@ class CameraXActivity :
             Log.d("RATIO", "${box.height()} -> new width: ${(newHeight * (4/3) + 1).toFloat()} vs $newWidth")
         }
         // center the box
-        var dx = ((newWidth - box.width()) / 2 + 1).toInt()
-        var dy = ((newHeight - box.height()) / 2 + 1).toInt()
+        var dx = ((newWidth - box.width()) / 2).toInt()
+        var dy = ((newHeight - box.height()) / 2).toInt()
         box.set(box.left-dx, box.top-dy, box.right+dx, box.bottom+dy)
 
         Log.d("RATIO", "newBox $dx, $dy -> ${box.flattenToString()}")
 
         // Handle illegal argument exception
+        if (box.width() > bitmapWidth || box.height() > bitmapHeight){
+            box.set(0, 0, bitmapWidth, bitmapHeight)
+        }
         if (box.left < 0 ){
             dx = abs(box.left)
-            box.set(box.left + dx, box.top, box.right + dx, box.bottom)
+            box.set(0, box.top, box.right + dx, box.bottom)
         }
         if (box.top < 0){
             dy = abs(box.top)
-            box.set(box.left, box.top + dy, box.right, box.bottom + dy)
+            box.set(box.left, 0, box.right, box.bottom + dy)
         }
-        if (box.width() > bitmapWidth || box.height() > bitmapHeight){
-            // to simplify calculations, return bitmap width and height
-            Log.d("RATIO", box.flattenToString())
-            box.set(0, 0, bitmapWidth, bitmapHeight)
-
-
-//            if (bitmapWidth > bitmapHeight) {
-//                var bitmapWidthTmp = (bitmapHeight * 4 / 3 + 1)
-//                if (bitmapWidthTmp > bitmapWidth) {
-//                    box.set(0, 0, bitmapWidth, bitmapHeight)
-//                } else{
-            // TODO
-//                    // box.set(box.left, box.top, box.left + bitmapWidthTmp, box.top + bitmapHeight)
-//                }
-//            } else {
-//                var bitmapHeightTmp = (bitmapWidth * 3 / 4 + 1)
-//                if(bitmapHeightTmp > bitmapHeight){
-//                    box.set(0, 0, bitmapWidth, bitmapHeight)
-//                } else {
-            // TODO
-//                    // box.set(box.left, box.top, box.left + bitmapWidth, box.top + bitmapHeightTmp)
-//                }
-//            }
+        if (box.right > bitmapWidth) {
+            dx = box.right - bitmapWidth
+            box.set(box.left - dx, box.top, bitmapWidth, box.bottom)
+        }
+        if (box.bottom > bitmapHeight) {
+            dy = box.bottom - bitmapHeight
+            box.set(box.left, box.top-dy, box.right, bitmapHeight)
         }
         Log.d("RATIO", "return valid coordinates ${box.flattenToString()}, $bitmapHeight, $bitmapWidth")
         return box
@@ -559,26 +608,6 @@ class CameraXActivity :
         rect.top = xy0.second
         rect.bottom = xy1.second
         return rect
-    }
-
-    // Extension function to convert ImageProxy to bitmap
-    private fun ImageProxy.toBitmap(): Bitmap {
-        val yBuffer = planes[0].buffer // Y
-        val vuBuffer = planes[2].buffer // VU
-
-        val ySize = yBuffer.remaining()
-        val vuSize = vuBuffer.remaining()
-
-        val nv21 = ByteArray(ySize + vuSize)
-
-        yBuffer.get(nv21, 0, ySize)
-        vuBuffer.get(nv21, ySize, vuSize)
-
-        val yuvImage = YuvImage(nv21, ImageFormat.NV21, this.width, this.height, null)
-        val out = ByteArrayOutputStream()
-        yuvImage.compressToJpeg(Rect(0, 0, yuvImage.width, yuvImage.height), 100, out)
-        val imageBytes = out.toByteArray()
-        return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
     }
 
     private val requiredPermissions: Array<String?>
