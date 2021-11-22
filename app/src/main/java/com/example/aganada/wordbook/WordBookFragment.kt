@@ -14,7 +14,6 @@ import androidx.navigation.findNavController
 import com.example.aganada.R
 import com.example.aganada.databinding.FragmentWordBookBinding
 import com.example.aganada.camera.CameraXActivity
-import com.example.aganada.learn.LearnFragmentViewModel
 
 
 class WordBookFragment : Fragment() {
@@ -48,11 +47,17 @@ class WordBookFragment : Fragment() {
                 R.id.action_wordBookFragment_to_testFragment)
         }
 
-        binding.addButton.setOnClickListener {
-            viewModel.loadImages(binding.gridLayout, activity?.dataDir)
+        viewModel.wordbook.observe(viewLifecycleOwner) { fileList ->
+            fileList.forEach { file ->
+                viewModel.addImage(binding.gridLayout, file)
+            }
         }
 
         return view
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadImages(requireContext())
+    }
 }
