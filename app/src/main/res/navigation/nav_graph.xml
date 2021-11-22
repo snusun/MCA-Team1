@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/learnFragment">
+    app:startDestination="@id/wordBookFragment">
 
     <fragment
         android:id="@+id/learnFragment"
@@ -12,7 +12,10 @@
         tools:layout="@layout/fragment_learn" >
         <action
             android:id="@+id/action_learnFragment_to_wordBookFragment"
-            app:destination="@id/wordBookFragment" />
+            app:destination="@id/wordBookFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/wordBookFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/testFragment"
@@ -21,7 +24,9 @@
         tools:layout="@layout/fragment_test" >
         <action
             android:id="@+id/action_testFragment_to_wordBookFragment"
-            app:destination="@id/wordBookFragment" />
+            app:destination="@id/wordBookFragment"
+            app:popUpTo="@id/wordBookFragment"
+            app:launchSingleTop="true" />
     </fragment>
     <fragment
         android:id="@+id/wordBookFragment"
@@ -30,6 +35,8 @@
         tools:layout="@layout/fragment_word_book" >
         <action
             android:id="@+id/action_wordBookFragment_to_testFragment"
-            app:destination="@id/testFragment" />
+            app:destination="@id/testFragment"
+            app:popUpTo="@id/wordBookFragment"
+            app:launchSingleTop="true" />
     </fragment>
 </navigation>
