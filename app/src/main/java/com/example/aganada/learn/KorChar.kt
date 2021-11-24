@@ -1,6 +1,13 @@
 package com.example.aganada.learn
 
-class countstrokes {
+import kr.bydelta.koala.*
+
+class KorChar {
+    fun check(): Boolean {
+        println('가'.dissembleHangul())
+        return true
+    }
+    /*
     val beginCode = 0xAC00  // 시작 유니코드 (44032)
     val endCode = 0xD7AF  // 끝 유니코드 (55215)
 
@@ -20,6 +27,11 @@ class countstrokes {
 
     // 쉬프트 키 사용 문자열
     val shiftedCharSet = """~!@#$%^&*()_+{}|:"<>?"""
+
+    private fun splitSyllable(): {
+
+    }
+    */
 
     /*
     def splitsyllable(self):

@@ -20,6 +20,7 @@ import com.example.aganada.views.WordView.DrawMode
 import com.example.aganada.databinding.FragmentLearnBinding
 import kotlinx.android.synthetic.main.fragment_learn.view.*
 import kotlinx.android.synthetic.main.fragment_test.*
+import kr.bydelta.koala.*
 import java.io.File
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -47,6 +48,7 @@ class LearnFragment : Fragment() {
 
         setView()
         setObserve()
+        println('가'.dissembleHangul())
 
         return binding.root
     }
