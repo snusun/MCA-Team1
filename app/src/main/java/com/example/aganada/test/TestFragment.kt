@@ -138,7 +138,7 @@ class TestFragment : Fragment() {
     private fun showFinishModal() {
         dialog.setOnClickListener {
             when (it.id) {
-                R.id.button_retry -> {
+                R.id.button_confirm -> {
                     this.findNavController().navigate(R.id.action_testFragment_to_wordBookFragment)
                 }
                 R.id.button_terminate  -> {

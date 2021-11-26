@@ -10,6 +10,7 @@ import java.util.regex.Pattern
 
 object PhotoFiles {
     private const val WORDBOOK = "wordbook"
+    private val pattern: Pattern = Pattern.compile("^.+(tmp|${WORDBOOK})/(.+)_(.+)\\.jpeg$")
 
     fun moveTempToWordbook(tempFile: File) {
         val wordbook = File(tempFile.parentFile?.parent, WORDBOOK)
@@ -22,7 +23,6 @@ object PhotoFiles {
     }
 
     fun getLabel(fileName: String): String {
-        val pattern: Pattern = Pattern.compile("^.+(tmp|${WORDBOOK})/(.+)_(.+)\\.jpeg$")
         val matches: Matcher = pattern.matcher(fileName)
         return if (matches.matches()) {
             matches.group(2)?: ""
@@ -43,7 +43,6 @@ object PhotoFiles {
     }
 
     fun sortWordbook(files: Iterable<File>): List<File> {
-        val pattern: Pattern = Pattern.compile("^.+(tmp|${WORDBOOK})/(.+)_(.+)\\.jpeg$")
         return files.sortedBy{
             val matches: Matcher = pattern.matcher(it.absolutePath)
             if (matches.matches()) {

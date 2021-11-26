@@ -7,13 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import com.example.aganada.R
-import com.example.aganada.databinding.DialogFinishBinding
+import com.example.aganada.databinding.DialogEditBinding
 
-class FinishDialog: DialogFragment() {
-    var title: String = ""
-    var content: String = ""
+class EditDialog: DialogFragment() {
+    var originLabel: String = ""
 
-    private lateinit var binding: DialogFinishBinding
+    lateinit var binding: DialogEditBinding
     private var onClickListener: View.OnClickListener? = null
 
     fun setOnClickListener(onClickListener: View.OnClickListener) {
@@ -36,9 +35,9 @@ class FinishDialog: DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DialogFinishBinding.inflate(inflater, container, false)
-        binding.textViewTitle.text = title
-        binding.textViewContent.text= content
+        binding = DialogEditBinding.inflate(inflater, container, false)
+        binding.editTextContent.hint = originLabel
+        binding.editTextContent.setText(originLabel)
         return binding.root
     }
 
