@@ -13,12 +13,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
+import com.example.aganada.PhotoFiles
 import com.example.aganada.R
 import com.example.aganada.camera.CameraXActivity
 import com.example.aganada.views.WordView.DrawMode
 import com.example.aganada.databinding.FragmentLearnBinding
+import com.example.aganada.views.EditDialog
 import kotlinx.android.synthetic.main.fragment_learn.view.*
 import kotlinx.android.synthetic.main.fragment_test.*
+import java.io.File
 
 class LearnFragment : Fragment() {
     private var _binding: FragmentLearnBinding? = null
@@ -31,6 +34,7 @@ class LearnFragment : Fragment() {
             }
         }).get(LearnFragmentViewModel::class.java)
     }
+    private val dialog = EditDialog()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,6 +67,10 @@ class LearnFragment : Fragment() {
 
             wordbookButton.setOnClickListener {
                 findNavController().navigate(R.id.action_learnFragment_to_wordBookFragment)
+            }
+
+            editButton.setOnClickListener {
+                this@LearnFragment.showEditDialog(this@LearnFragment.viewModel.photo.value!!)
             }
         }
     }
@@ -109,6 +117,30 @@ class LearnFragment : Fragment() {
             Toast.makeText(context, "다시한번 써볼까요?", Toast.LENGTH_SHORT).show()
             wordView.clear()
         }
+    }
+
+    private fun showEditDialog(photo: File) {
+        val originLabel = PhotoFiles.getLabel(photo.absolutePath)
+        dialog.originLabel = originLabel
+        dialog.setOnClickListener {
+            when (it.id) {
+                R.id.button_terminate -> {
+                    dialog.dismiss()
+                }
+                R.id.button_confirm -> {
+                    dialog.dismiss()
+                    var newLabel = dialog.binding.editTextContent.text.toString().trim()
+                    if (newLabel.isBlank()) {
+                        newLabel = originLabel
+                    }
+                    val newFile = File(photo.parent, photo.name.replace(originLabel, newLabel))
+                    photo.renameTo(newFile)
+                    activity?.intent?.extras?.putString("captured_image_name", newFile.absolutePath)
+                    viewModel.loadPhoto(newFile.absolutePath)
+                }
+            }
+        }
+        dialog.show(parentFragmentManager, "edit dialog")
     }
 
     override fun onResume() {
