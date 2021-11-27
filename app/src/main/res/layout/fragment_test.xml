@@ -43,12 +43,13 @@
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cardView"
-            android:layout_width="240dp"
+            android:layout_width="0dp"
             android:layout_height="0dp"
+            app:layout_constraintHeight_percent="0.35"
             android:layout_marginTop="32dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
-            app:layout_constraintDimensionRatio="16:9"
+            app:layout_constraintDimensionRatio="4:3"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" >
@@ -148,6 +149,19 @@
                 android:src="@drawable/ic_baseline_undo_24" />
 
         </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/shuffle_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="16dp"
+            android:background="@null"
+            android:contentDescription="@string/check"
+            android:padding="4dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_baseline_shuffle_24"
+            app:layout_constraintEnd_toStartOf="@+id/check_button"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageButton
             android:id="@+id/check_button"
