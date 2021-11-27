@@ -57,29 +57,6 @@ import kotlin.math.max
 import kotlin.math.min
 import android.graphics.Bitmap
 
-//import com.google.mlkit.vision.demo.VisionImageProcessor
-/*
-import com.google.mlkit.vision.demo.kotlin.barcodescanner.BarcodeScannerProcessor
-import com.google.mlkit.vision.demo.kotlin.facedetector.FaceDetectorProcessor
-import com.google.mlkit.vision.demo.kotlin.labeldetector.LabelDetectorProcessor
-import com.google.mlkit.vision.demo.kotlin.posedetector.PoseDetectorProcessor
-import com.google.mlkit.vision.demo.kotlin.segmenter.SegmenterProcessor
-import com.google.mlkit.vision.demo.kotlin.textdetector.TextRecognitionProcessor
-*/
-
-//import com.google.mlkit.vision.demo.preference.PreferenceUtils
-//import com.google.mlkit.vision.demo.preference.SettingsActivity
-//import com.google.mlkit.vision.demo.preference.SettingsActivity.LaunchSource
-//import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
-//import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
-/*
-import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
-import com.google.mlkit.vision.text.devanagari.DevanagariTextRecognizerOptions
-import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
-import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-*/
-
 /** Live preview demo app for ML Kit APIs using CameraX. */
 @KeepName
 @RequiresApi(VERSION_CODES.LOLLIPOP)
