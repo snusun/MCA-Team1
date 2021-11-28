@@ -380,7 +380,7 @@ class CameraXActivity :
         cameraProvider!!.bindToLifecycle(this, cameraSelector!!, analysisUseCase)
     }
 
-    private fun getDetectionInfo(image: ImageProxy): Pair<Rect?, String?>{
+    private fun getDetectionInfo(image: ImageProxy): Pair<Rect?, DetectedObject.Label?>{
         Log.d("HYUNSOO", "saveImage -$capture")
         if(objectDetectorProcessor != null){
             Log.d(TAG, "ObjectDetectorProcessor properly instantiated")
@@ -394,7 +394,7 @@ class CameraXActivity :
             // Case 2: there are detected objects in current image
             val detectedObjects = objectDetectorProcessor?.getDetectedObjects()
             if (detectedObjects != null) {
-                var targetLabel = ""
+                var targetLabel : DetectedObject.Label? = null
                 var targetBoundingBox: Rect? = null
                 var targetBoundingBoxF: RectF? = null
 
@@ -414,7 +414,7 @@ class CameraXActivity :
                         val confidence = 0
                         for (label in detectedObject.labels){
                             if(label.confidence > confidence){
-                                targetLabel = label.text
+                                targetLabel = label
                             }
                         }
                         Log.d("HYUNSOO", "touched inside box")
@@ -463,22 +463,17 @@ class CameraXActivity :
 
     @RequiresApi(VERSION_CODES.P)
     private fun cropAndSaveImage(image: ImageProxy){
+
         // Get detected object's info
         var (targetBoundingBox, targetLabel) = getDetectionInfo(image)!!
-        if(targetBoundingBox == null) return
-        var finalLabel = targetLabel
+        if(targetBoundingBox == null || targetLabel == null) return
+        var finalLabelTxt = targetLabel.text
         try {
-            finalLabel = ko_labels!!.get(targetLabel) as String
-            Log.d("TRANSLATION", "$finalLabel")
+            finalLabelTxt = ko_labels!!.get(targetLabel.text) as String
+            Log.d("TRANSLATION", "$finalLabelTxt")
         } catch (e: JSONException){
             e.printStackTrace()
         }
-
-        // Create final output file stream
-        val photoFile = File(
-            outputDirectory,
-            finalLabel + "_" + SimpleDateFormat(FILENAME_FORMAT, Locale.US
-            ).format(System.currentTimeMillis()) + ".jpeg")
 
         // Get image's bitmap and crop with adjustment
         val tempFile = File(
@@ -504,6 +499,42 @@ class CameraXActivity :
                 "${targetBoundingBox.top}, ${targetBoundingBox.bottom}")
         Log.d("11-19", "bitmap: ${bitmap.width}, ${bitmap.height}")
         Log.d("11-19", "croppedBitmap: ${croppedBitmap.width}, ${croppedBitmap.height}")
+
+        // Use cropped image to use Image labeling
+        val tmpImage = InputImage.fromBitmap(bitmap, 0)
+        if(imageLabeler == null){
+             return
+        }
+        imageLabeler!!.process(tmpImage)
+            .addOnSuccessListener { labels ->
+                var bestLabel :ImageLabel? = null
+                Log.d("IMG-LABELING", labels.size.toString())
+                for (label in labels){
+                    if(bestLabel == null || label.confidence > bestLabel.confidence){
+                        bestLabel = label
+                    }
+                }
+                if(bestLabel == null){
+                    Log.d("IMG-LABELING", "Image labeling gave us nothing... Using ${targetLabel.text}")
+                }
+                else{
+                    Log.d("IMG-LABELING", "${bestLabel!!.confidence}, ${bestLabel.text}, ${bestLabel.index}" +
+                            " VS ${targetLabel.confidence}, ${targetLabel.text}, ${targetLabel.index}")
+                }
+                if (bestLabel != null && bestLabel.confidence > targetLabel.confidence){
+                    finalLabelTxt = bestLabel.text
+                }
+            }
+            .addOnFailureListener{ e ->
+                Log.e("IMG-LABELING", e.toString())
+                Toast.makeText(baseContext, "Image Labeler was not properly instantiated", Toast.LENGTH_SHORT).show()
+            }
+
+        // Create final output file stream
+        val photoFile = File(
+            outputDirectory,
+            finalLabelTxt + "_" + SimpleDateFormat(FILENAME_FORMAT, Locale.US
+            ).format(System.currentTimeMillis()) + ".jpeg")
 
         // Save image to file
         try {
