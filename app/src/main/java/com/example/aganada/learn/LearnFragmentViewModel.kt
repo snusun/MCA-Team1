@@ -5,6 +5,7 @@ import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.aganada.PhotoFiles
 import com.example.aganada.test.TestFragmentViewModel
 import com.example.aganada.views.InkManager
 import com.example.aganada.views.WordView
@@ -12,8 +13,6 @@ import com.example.aganada.views.WordView.DrawMode
 import com.google.mlkit.vision.digitalink.Ink
 import kr.bydelta.koala.dissembleHangul
 import java.io.File
-import java.util.regex.Matcher
-import java.util.regex.Pattern
 
 class LearnFragmentViewModel: ViewModel() {
     private val _drawMode: MutableLiveData<DrawMode> = MutableLiveData(DrawMode.PENCIL)
@@ -69,16 +68,21 @@ class LearnFragmentViewModel: ViewModel() {
     private val nucleusStrokes = arrayListOf(2, 3, 3, 4, 2, 3, 3, 4, 2, 4, 5, 3, 3, 2, 4, 5, 3, 3, 1, 2, 1)
     private val codaStrokes = arrayListOf(0, 1, 2, 3, 1, 3, 4, 2, 3, 4, 6, 7, 5, 6, 7, 6, 3, 4, 6, 2, 4, 1, 2, 3, 2, 3, 4, 3)
 
+    private fun onRecognitionResultOut(result: String) {
+        fun String.removeWhitespaces() = replace(" ", "")
+        _checkResult.value = CheckResult(
+            correct = result.removeWhitespaces() == label.value?.removeWhitespaces(),
+            label = label.value?: "",
+            answer = result,
+        )
+    }
+
     fun loadPhoto(filename: String) {
-        val pattern: Pattern = Pattern.compile("^.+tmp/(.+)_.+\\.jpeg$")
-        val matches: Matcher = pattern.matcher(filename)
-        if (matches.matches()) {
-            val file = File(filename)
-            val label = matches.group(1)
-            if (file.exists()) {
-                _photo.value = File(filename)
-                _label.value = label
-            }
+        val label = PhotoFiles.getLabel(filename)
+        val file = File(filename)
+        if (label.isNotBlank() && file.exists()) {
+            _photo.value = file
+            _label.value = label
         } else {
             Log.v("JONGSUN", "$filename no Label found.")
         }
@@ -104,13 +108,9 @@ class LearnFragmentViewModel: ViewModel() {
         inkManager.recognize(inkBuilder)
     }
 
-    fun onRecognitionResultOut(result: String) {
-        fun String.removeWhitespaces() = replace(" ", "")
-        _checkResult.value = CheckResult(
-            correct = result.removeWhitespaces() == label.value?.removeWhitespaces(),
-            label = label.value?: "",
-            answer = result,
-        )
+    fun movePhotoToWordBook() {
+        val tempFile = this.photo.value ?: return
+        PhotoFiles.moveTempToWordbook(tempFile)
     }
 
     fun strokes(label: String): Int {

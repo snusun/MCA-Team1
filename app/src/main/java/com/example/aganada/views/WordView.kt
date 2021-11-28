@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.graphics.PointF
+import com.example.aganada.R
 import com.google.mlkit.vision.digitalink.Ink
 import kotlin.math.atan2
 import kotlin.math.pow
@@ -20,7 +21,9 @@ class WordView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyle: Int = 0
 ) : View(context, attrs, defStyle) {
-    private val paint = Paint()
+    private val paint = Paint().also {
+        it.typeface = context.resources.getFont(R.font.font)
+    }
     private var centerX: Float = 0f
     private var centerY: Float = 0f
     private var padding: Float = 0f
@@ -28,10 +31,13 @@ class WordView @JvmOverloads constructor(
     private var widthSize: Int = 0
     private var eraseSize: Float = 0f
     private var lineWidth: Float = 0f
+    private var fontSize: Float = 0f
+    private var textBounds: Rect = Rect()
 
     var word = ""
     set(value) {
         field = value
+        measureFontSize()
         invalidate()
     }
 
@@ -45,6 +51,14 @@ class WordView @JvmOverloads constructor(
     private var path: PathData? = null
     private var eraserPath: Path? = null
     private var eraserPoint: PointF? = null
+
+
+    init {
+        for (c in 'A'..'Z') {
+            Log.d("charsize", paint.measureText(c.toString()).toString())
+
+        }
+    }
 
     fun unDo() {
         val op = drawOpStack.removeLastOrNull()
@@ -137,7 +151,7 @@ class WordView @JvmOverloads constructor(
                     eraserPoint = null
                     this.eraserPath = null
                     this.pathSet.removeAll(removeList)
-                    val removingList = removingList?: return true
+                    val removingList = removingList?: mutableListOf()
                     removingList.addAll(removeList)
                     if (removeList.isNotEmpty()) {
                         drawOpStack.add(DrawOp(DrawOpType.ERASER, removingList))
@@ -151,6 +165,17 @@ class WordView @JvmOverloads constructor(
         return true
     }
 
+    private fun measureFontSize() {
+        paint.textSize = heightSize - padding * 2
+        if (paint.measureText(word) >( widthSize - padding * 2)) {
+            paint.textSize =
+                ( widthSize - padding * 2) / paint.measureText(word) * paint.textSize
+        }
+        fontSize = paint.textSize
+
+        paint.getTextBounds(word, 0, word.length, textBounds)
+    }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 //        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
@@ -162,6 +187,8 @@ class WordView @JvmOverloads constructor(
         padding = convertDpToPixel(16f, context)
         eraseSize = convertDpToPixel(8f, context)
         lineWidth = convertDpToPixel(4f, context)
+
+        measureFontSize()
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -171,12 +198,16 @@ class WordView @JvmOverloads constructor(
 
         /* draw word */
         run {
+            val fm = paint.fontMetrics
+            val textHeight = (fm.descent - fm.ascent) / 2
+
             paint.color = Color.parseColor("#22000000")
             paint.style = Paint.Style.FILL
-            paint.textSize = heightSize - padding * 2
-            val maxChar = "N"
-            val textX = centerX - (paint.measureText(word) / 2)
-            val textY = centerY + paint.measureText(maxChar) / 2
+            paint.textSize = fontSize
+            paint.textAlign = Paint.Align.CENTER
+
+            val textX = (width shr 1).toFloat()
+            val textY = centerY + textHeight / 2
             canvas.drawText(word, textX, textY, paint)
 
             paint.color = Color.parseColor("#44000000")
