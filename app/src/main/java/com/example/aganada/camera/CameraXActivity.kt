@@ -56,6 +56,12 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import android.graphics.Bitmap
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.label.ImageLabel
+import com.google.mlkit.vision.label.ImageLabeler
+import com.google.mlkit.vision.label.ImageLabeling
+import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
+import com.google.mlkit.vision.objects.DetectedObject
 
 /** Live preview demo app for ML Kit APIs using CameraX. */
 @KeepName
