@@ -80,6 +80,7 @@ class CameraXActivity :
     private var captureUseCase: ImageCapture? = null
     private var imageProcessor: VisionImageProcessor? = null
     private var objectDetectorProcessor: ObjectDetectorProcessor? = null
+    private var imageLabeler: ImageLabeler? = null
     private var needUpdateGraphicOverlayImageSourceInfo = false
     private var selectedModel = OBJECT_DETECTION_CUSTOM
     private var lensFacing = CameraSelector.LENS_FACING_BACK
@@ -290,6 +291,9 @@ class CameraXActivity :
         if (imageProcessor != null) {
             imageProcessor!!.stop()
         }
+        if (imageLabeler != null){
+            imageLabeler!!.close()
+        }
 
         imageProcessor =
             try {
@@ -315,6 +319,23 @@ class CameraXActivity :
                     .show()
                 return
             }
+
+        imageLabeler =
+            try{
+                // Build image-labeling model
+                val localModel = LocalModel.Builder().setAssetFilePath("custom_models/inception_v2_quant_1_metadata_1.tflite").build()
+                // Create image labeler from model
+                val customImageLabelerOptions = CustomImageLabelerOptions.Builder(localModel)
+                    .setConfidenceThreshold(0.5f)
+                    .setMaxResultCount(5)
+                    .build()
+                ImageLabeling.getClient(customImageLabelerOptions)
+            } catch (e: Exception){
+                Log.e("IMG-LABELING", "Cannot create image labeler")
+                Toast.makeText(applicationContext, "Cannot create image labeler...", Toast.LENGTH_SHORT).show()
+                return
+            }
+
 
         val builder = ImageAnalysis.Builder()
         val targetResolution = PreferenceUtils.getCameraXTargetResolution(this, lensFacing)
