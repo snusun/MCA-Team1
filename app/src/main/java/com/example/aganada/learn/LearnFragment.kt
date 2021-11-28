@@ -76,7 +76,6 @@ class LearnFragment : Fragment() {
             label.observe(viewLifecycleOwner) {
                 binding.wordView.word = it
                 viewModel.strokes(it)
-                println(it)
             }
 
             photo.observe(viewLifecycleOwner) {
