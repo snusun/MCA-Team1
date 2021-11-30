@@ -49,7 +49,13 @@ class WordBookFragment : Fragment() {
 
         viewModel.wordbook.observe(viewLifecycleOwner) { fileList ->
             fileList.forEach { file ->
-                viewModel.addImage(binding.gridLayout, file)
+                val layout = FlipCardLayout.create(binding.gridLayout.context, file)
+                layout.load()
+
+                binding.gridLayout.post {
+                    layout.resize(binding.gridLayout.measuredWidth, binding.gridLayout.columnCount)
+                    binding.gridLayout.addView(layout)
+                }
             }
         }
 
