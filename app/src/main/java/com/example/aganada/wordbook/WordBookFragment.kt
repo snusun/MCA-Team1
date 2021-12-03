@@ -11,9 +11,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.example.aganada.R
 import com.example.aganada.databinding.FragmentWordBookBinding
 import com.example.aganada.camera.CameraXActivity
+import com.example.aganada.views.EditDialog
+import com.example.aganada.views.DeleteDialog
 
 
 class WordBookFragment : Fragment() {
@@ -27,6 +30,9 @@ class WordBookFragment : Fragment() {
             }
         }).get(WordBookFragmentViewModel::class.java)
     }
+
+    private val deleteDialog = DeleteDialog()
+    private val editDialog = EditDialog()
 
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreateView(
@@ -49,7 +55,14 @@ class WordBookFragment : Fragment() {
 
         viewModel.wordbook.observe(viewLifecycleOwner) { fileList ->
             fileList.forEach { file ->
-                val layout = FlipCardLayout.create(binding.gridLayout.context, file)
+                val layout = FlipCardLayout.create(requireContext(), file).also { card ->
+                    card.setTextLongClickListener {
+                        showEditDialog(card)
+                    }
+                    card.setImageLongClickListener {
+                        showDeleteDialog(card)
+                    }
+                }
                 layout.load()
 
                 binding.gridLayout.post {
@@ -60,6 +73,41 @@ class WordBookFragment : Fragment() {
         }
 
         return view
+    }
+
+    private fun showDeleteDialog(card: FlipCardLayout): Boolean {
+        deleteDialog.title = card.getLabel()
+        deleteDialog.setOnClickListener {
+            when (it.id) {
+                R.id.button_cancel -> deleteDialog.dismiss()
+                R.id.button_delete -> {
+                    card.delete()
+                    deleteDialog.dismiss()
+                }
+            }
+        }
+        deleteDialog.show(parentFragmentManager, "deleteCard dialog")
+        return true
+    }
+
+    private fun showEditDialog(card: FlipCardLayout): Boolean {
+        editDialog.originLabel = card.getLabel()
+        editDialog.setOnClickListener {
+            when (it.id) {
+                R.id.button_terminate -> {
+                    editDialog.dismiss()
+                }
+                R.id.button_confirm -> {
+                    val newLabel = editDialog.binding.editTextContent.text.toString().trim()
+                    if (newLabel.isBlank()) return@setOnClickListener
+
+                    card.rename(newLabel)
+                    editDialog.dismiss()
+                }
+            }
+        }
+        editDialog.show(parentFragmentManager, "wordbook edit dialog")
+        return true
     }
 
     override fun onResume() {
