@@ -20,6 +20,8 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.util.Log
+import android.widget.Toast
 import com.example.aganada.camera.utils.GraphicOverlay
 import com.google.mlkit.vision.objects.DetectedObject
 import kotlin.math.max
@@ -40,6 +42,11 @@ class ObjectGraphic constructor(
     }
 
     override fun draw(canvas: Canvas) {
+        if (detectedObject.labels.isNullOrEmpty()){
+            Log.d("OBJECT-GRAPHIC", "Skip drawing bounding box")
+            return
+        }
+        assert(detectedObject.labels.isNotEmpty())
         val rect = RectF(detectedObject.boundingBox)
         val x0 = translateX(rect.left)
         val x1 = translateX(rect.right)
