@@ -3,6 +3,7 @@ package com.example.aganada.wordbook
 import android.content.Context
 import android.util.DisplayMetrics
 import android.util.Log
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -72,8 +73,23 @@ class FlipCardLayout private constructor(context: Context,
 
     fun load() {
         Glide.with(context).load(file).into(imageView)
-        textView.text = getLabel()
+        setText(getLabel())
         Log.d("JHTEST", getLabel())
+    }
+
+    private fun setText(label: String) {
+        textView.text = label
+
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, (layoutParams.height - paddingTop - paddingBottom).toFloat() / 3)
+
+        val textWidthSize = textView.paint.measureText(label)
+        Log.d("JHTEST", "textWidthSize: $textWidthSize")
+        val frameWidthSize = (layoutParams.width - paddingLeft - paddingRight) * 0.9
+        Log.d("JHTEST", "frameWidthSize: $frameWidthSize")
+
+        if (textWidthSize > frameWidthSize) {
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, (frameWidthSize / textWidthSize * textView.paint.textSize).toFloat())
+        }
     }
 
     fun getLabel(): String {
@@ -82,9 +98,10 @@ class FlipCardLayout private constructor(context: Context,
 
     fun rename(label: String) {
         val newFile = File(file.parent, file.name.replace(getLabel(), label))
+        Log.d("JHTESTRENAME", newFile.absolutePath)
         file.renameTo(newFile)
         file = newFile
-        this.load()
+        setText(label)
     }
 
     private fun detach() {
