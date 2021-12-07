@@ -3,6 +3,7 @@ package com.example.aganada.wordbook
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -54,27 +55,33 @@ class WordBookFragment : Fragment() {
         }
 
         viewModel.wordbook.observe(viewLifecycleOwner) { fileList ->
-            binding.gridLayout.removeAllViews()
-            fileList.forEach { file ->
-                val layout = FlipCardLayout.create(requireContext(), file).also { card ->
-                    card.setTextLongClickListener {
-                        showEditDialog(card)
-                    }
-                    card.setImageLongClickListener {
-                        showDeleteDialog(card)
-                    }
-                }
-
+            activity?.runOnUiThread {
                 binding.gridLayout.post {
-                    layout.resize(binding.gridLayout.measuredWidth, binding.gridLayout.columnCount)
-                    layout.load()
-                    binding.gridLayout.addView(layout)
+                    binding.gridLayout.removeAllViews()
+                }
+                fileList.forEach { file ->
+                    val layout = FlipCardLayout.create(requireContext(), file).also { card ->
+                        card.setTextLongClickListener {
+                            showEditDialog(card)
+                        }
+                        card.setImageLongClickListener {
+                            showDeleteDialog(card)
+                        }
+                    }
+
+                    binding.gridLayout.post {
+                        layout.resize(binding.gridLayout.measuredWidth, binding.gridLayout.columnCount)
+                        layout.load()
+                        binding.gridLayout.addView(layout)
+                    }
                 }
             }
         }
 
         return view
     }
+
+
 
     private fun showDeleteDialog(card: FlipCardLayout): Boolean {
         deleteDialog.title = card.getLabel()
