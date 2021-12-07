@@ -54,6 +54,7 @@ class WordBookFragment : Fragment() {
         }
 
         viewModel.wordbook.observe(viewLifecycleOwner) { fileList ->
+            binding.gridLayout.removeAllViews()
             fileList.forEach { file ->
                 val layout = FlipCardLayout.create(requireContext(), file).also { card ->
                     card.setTextLongClickListener {
@@ -63,10 +64,10 @@ class WordBookFragment : Fragment() {
                         showDeleteDialog(card)
                     }
                 }
-                layout.load()
 
                 binding.gridLayout.post {
                     layout.resize(binding.gridLayout.measuredWidth, binding.gridLayout.columnCount)
+                    layout.load()
                     binding.gridLayout.addView(layout)
                 }
             }
@@ -101,7 +102,9 @@ class WordBookFragment : Fragment() {
                     val newLabel = editDialog.binding.editTextContent.text.toString().trim()
                     if (newLabel.isBlank()) return@setOnClickListener
 
-                    card.rename(newLabel)
+                    activity?.runOnUiThread {
+                        card.rename(newLabel)
+                    }
                     editDialog.dismiss()
                 }
             }
