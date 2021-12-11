@@ -2,6 +2,7 @@ package com.example.aganada.views
 
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,8 +37,11 @@ class EditDialog: DialogFragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = DialogEditBinding.inflate(inflater, container, false)
-        binding.editTextContent.hint = originLabel
-        binding.editTextContent.setText(originLabel)
+        binding.editTextContent.post {
+            binding.editTextContent.hint = originLabel
+            binding.editTextContent.setText(originLabel)
+            Log.d("JHTEST", "Text: ${binding.editTextContent.text}")
+        }
         return binding.root
     }
 

@@ -18,6 +18,7 @@ import com.example.aganada.databinding.FragmentWordBookBinding
 import com.example.aganada.camera.CameraXActivity
 import com.example.aganada.views.EditDialog
 import com.example.aganada.views.DeleteDialog
+import kotlinx.android.synthetic.main.dialog_edit.*
 
 
 class WordBookFragment : Fragment() {
@@ -99,24 +100,28 @@ class WordBookFragment : Fragment() {
     }
 
     private fun showEditDialog(card: FlipCardLayout): Boolean {
-        editDialog.originLabel = card.getLabel()
         editDialog.setOnClickListener {
             when (it.id) {
                 R.id.button_terminate -> {
                     editDialog.dismiss()
                 }
                 R.id.button_confirm -> {
+                    editDialog.dismiss()
+
                     val newLabel = editDialog.binding.editTextContent.text.toString().trim()
                     if (newLabel.isBlank()) return@setOnClickListener
 
                     activity?.runOnUiThread {
                         card.rename(newLabel)
                     }
-                    editDialog.dismiss()
                 }
             }
         }
-        editDialog.show(parentFragmentManager, "wordbook edit dialog")
+        editDialog.originLabel = card.getLabel()
+        Log.d("JHTEST", "Label : ${editDialog.originLabel}")
+        activity?.runOnUiThread {
+            editDialog.show(parentFragmentManager, "wordbook edit dialog")
+        }
         return true
     }
 
