@@ -37,8 +37,12 @@ class DeleteDialog: DialogFragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = DialogDeleteBinding.inflate(inflater, container, false)
-        binding.textViewTitle.text = title
-        binding.textViewContent.text = content
+        binding.textViewTitle.post {
+            binding.textViewTitle.text = title
+        }
+        binding.textViewContent.post {
+            binding.textViewContent.text = content
+        }
         return binding.root
     }
 

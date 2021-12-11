@@ -85,7 +85,6 @@ class WordBookFragment : Fragment() {
 
 
     private fun showDeleteDialog(card: FlipCardLayout): Boolean {
-        deleteDialog.title = card.getLabel()
         deleteDialog.setOnClickListener {
             when (it.id) {
                 R.id.button_cancel -> deleteDialog.dismiss()
@@ -95,7 +94,10 @@ class WordBookFragment : Fragment() {
                 }
             }
         }
-        deleteDialog.show(parentFragmentManager, "deleteCard dialog")
+        deleteDialog.title = card.getLabel()
+        activity?.runOnUiThread {
+            deleteDialog.show(parentFragmentManager, "deleteCard dialog")
+        }
         return true
     }
 
