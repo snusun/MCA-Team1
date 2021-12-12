@@ -89,6 +89,10 @@ class TestFragmentViewModel: ViewModel() {
     }
 
     fun recognizeText(set: Collection<WordView.PathData>) {
+        if (checkResult.value?.working == true) {
+            return
+        }
+        _checkResult.value = LearnFragmentViewModel.CheckResult(working = true)
         val inkBuilder = Ink.builder()
         for (data in set) {
             val strokeBuilder = Ink.Stroke.builder()

@@ -109,6 +109,9 @@ class LearnFragment : Fragment() {
     }
 
     private fun onCheckResultOut(checkResult: LearnFragmentViewModel.CheckResult) {
+        if (checkResult.working){
+            return
+        }
         if (checkResult.correct) {
             Toast.makeText(context, "참 잘했어요!!", Toast.LENGTH_SHORT).show()
             viewModel.movePhotoToWordBook()
