@@ -58,25 +58,6 @@
             android:layout_marginBottom="8dp"
             android:columnCount="3">
 
-            <!--
-            <ImageView
-                android:id="@+id/imageView1"
-                android:layout_columnWeight="1"
-                android:background="@drawable/background_border_black"
-                android:src="@drawable/ic_launcher_foreground" />
-
-            <ImageView
-                android:id="@+id/imageView2"
-                android:layout_columnWeight="1"
-                android:background="@drawable/background_border_black"
-                android:src="@drawable/ic_launcher_foreground" />
-
-            <ImageView
-                android:id="@+id/imageView3"
-                android:layout_columnWeight="1"
-                android:background="@drawable/background_border_black"
-                android:src="@drawable/ic_launcher_foreground"/>
-            -->
         </GridLayout>
     </ScrollView>
 
