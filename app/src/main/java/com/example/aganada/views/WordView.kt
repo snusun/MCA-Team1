@@ -191,6 +191,7 @@ class WordView @JvmOverloads constructor(
         measureFontSize()
     }
 
+    @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canvas?: return
@@ -199,11 +200,14 @@ class WordView @JvmOverloads constructor(
         /* draw word */
         run {
             val fm = paint.fontMetrics
+            val textWidth = paint.measureText(word)
             val textHeight = (fm.descent - fm.ascent) / 2
+            val textSpace = (fm.bottom - fm.top)
+            //Log.d("sunyoung", width.toString())
 
             paint.color = Color.parseColor("#22000000")
             paint.style = Paint.Style.FILL
-            paint.textSize = fontSize
+            paint.textSize = (fontSize * 0.8).toFloat()
             paint.textAlign = Paint.Align.CENTER
 
             val textX = (width shr 1).toFloat()
@@ -213,7 +217,14 @@ class WordView @JvmOverloads constructor(
             paint.color = Color.parseColor("#44000000")
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = lineWidth
+            print(fm)
             canvas.drawText(word, textX, textY, paint)
+
+            Log.d("sunyoung", "$textX $textWidth")
+            paint.textSize = 70f
+            canvas.drawText("1",
+                (textX - textWidth*2).toFloat(), (centerY - textSpace * 0.75).toFloat(), paint)
+            canvas.drawText("2", textX, (centerY + textSpace * 0.75).toFloat(), paint)
         }
 
         /* draw line */
