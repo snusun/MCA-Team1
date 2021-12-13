@@ -44,6 +44,9 @@ android {
         noCompress "tflite"
         // or noCompress "lite"
     }
+    repositories {
+        mavenCentral()
+    }
 }
 
 dependencies {
@@ -95,5 +98,7 @@ dependencies {
     // Glide for imageview
     implementation ("com.github.bumptech.glide:glide:4.11.0")
 
-
+    // Koalanlp for strokes
+    def koala_version = '2.1.4'
+    implementation "kr.bydelta:koalanlp-core:${koala_version}"
 }
