@@ -16,8 +16,8 @@ import com.bumptech.glide.Glide
 import com.example.aganada.PhotoFiles
 import com.example.aganada.R
 import com.example.aganada.camera.CameraXActivity
-import com.example.aganada.views.WordView.DrawMode
 import com.example.aganada.databinding.FragmentLearnBinding
+import com.example.aganada.views.WordView.DrawMode
 import com.example.aganada.views.EditDialog
 import kotlinx.android.synthetic.main.fragment_learn.view.*
 import kotlinx.android.synthetic.main.fragment_test.*

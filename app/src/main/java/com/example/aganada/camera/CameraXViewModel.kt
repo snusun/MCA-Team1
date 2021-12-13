@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.ExecutionException

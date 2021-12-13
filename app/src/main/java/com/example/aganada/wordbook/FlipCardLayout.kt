@@ -2,6 +2,8 @@ package com.example.aganada.wordbook
 
 import android.content.Context
 import android.util.DisplayMetrics
+import android.util.Log
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +19,7 @@ import com.bumptech.glide.Glide
 class FlipCardLayout private constructor(context: Context,
                                          private val imageView: ImageView,
                                          private val textView: TextView,
-                                         private val file: File,
+                                         private var file: File,
                                          private val duration: Long) : FrameLayout(context) {
 
     companion object {
@@ -34,6 +36,7 @@ class FlipCardLayout private constructor(context: Context,
             imageView.clipToOutline = true
             textView.textAlignment = View.TEXT_ALIGNMENT_CENTER
             textView.gravity = Gravity.CENTER
+            textView.typeface = context.resources.getFont(R.font.font)
 
             val layout = FlipCardLayout(context, imageView, textView, file, 300)
             layout.addView(imageView)
@@ -52,8 +55,7 @@ class FlipCardLayout private constructor(context: Context,
         imageView.setOnClickListener { rotateImageToText() }
         textView.setOnClickListener { rotateTextToImage() }
 
-        imageView.setOnLongClickListener { longClick() }
-        textView.setOnLongClickListener { longClick() }
+        imageView.setOnLongClickListener { delete() }
 
         setVisibility(showImage = true)
         imageView.rotationY = ANGLE_IMAGE_SHOW
@@ -71,16 +73,44 @@ class FlipCardLayout private constructor(context: Context,
 
     fun load() {
         Glide.with(context).load(file).into(imageView)
-        textView.text = PhotoFiles.getLabel(file.absolutePath)
+        setText(getLabel())
+        Log.d("JHTEST", getLabel())
     }
 
-    private fun delete() {
+    private fun setText(label: String) {
+        textView.text = label
+
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, (layoutParams.height - paddingTop - paddingBottom).toFloat() / 3)
+
+        val textWidthSize = textView.paint.measureText(label)
+        Log.d("JHTEST", "textWidthSize: $textWidthSize")
+        val frameWidthSize = (layoutParams.width - paddingLeft - paddingRight) * 0.9
+        Log.d("JHTEST", "frameWidthSize: $frameWidthSize")
+
+        if (textWidthSize > frameWidthSize) {
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, (frameWidthSize / textWidthSize * textView.paint.textSize).toFloat())
+        }
+    }
+
+    fun getLabel(): String {
+        return PhotoFiles.getLabel(file.absolutePath)
+    }
+
+    fun rename(label: String) {
+        val newFile = File(file.parent, file.name.replace(getLabel(), label))
+        Log.d("JHTESTRENAME", newFile.absolutePath)
+        file.renameTo(newFile)
+        file = newFile
+        setText(label)
+    }
+
+    private fun detach() {
         (parent as? ViewGroup)!!.removeView(this)
     }
 
-    private fun longClick(): Boolean {
+    fun delete(): Boolean {
         file.delete()
-        delete()
+        detach()
         return false
     }
 
@@ -113,6 +143,14 @@ class FlipCardLayout private constructor(context: Context,
             setVisibility(showImage = true)
             imageView.animate().rotationY(ANGLE_IMAGE_SHOW).duration = duration
         }
+    }
+
+    fun setTextLongClickListener(l: OnLongClickListener) {
+        textView.setOnLongClickListener(l)
+    }
+
+    fun setImageLongClickListener(l: OnLongClickListener) {
+        imageView.setOnLongClickListener(l)
     }
 
 }
