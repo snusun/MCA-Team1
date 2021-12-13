@@ -50,7 +50,7 @@ class WordBookFragment : Fragment() {
             startActivity(intent)
         }
 
-        binding.imageButtonAndroid.setOnClickListener {
+        binding.imageButtonTest.setOnClickListener {
             binding.root.findNavController().navigate(
                 R.id.action_wordBookFragment_to_testFragment)
         }
