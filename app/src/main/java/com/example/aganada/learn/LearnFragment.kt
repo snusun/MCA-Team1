@@ -16,9 +16,10 @@ import com.bumptech.glide.Glide
 import com.example.aganada.PhotoFiles
 import com.example.aganada.R
 import com.example.aganada.camera.CameraXActivity
-import com.example.aganada.views.WordView.DrawMode
 import com.example.aganada.databinding.FragmentLearnBinding
+import com.example.aganada.views.WordView.DrawMode
 import com.example.aganada.views.EditDialog
+import com.example.aganada.views.FeedbackDialog
 import kotlinx.android.synthetic.main.fragment_learn.view.*
 import kotlinx.android.synthetic.main.fragment_test.*
 import java.io.File
@@ -34,7 +35,8 @@ class LearnFragment : Fragment() {
             }
         }).get(LearnFragmentViewModel::class.java)
     }
-    private val dialog = EditDialog()
+    private val editDialog = EditDialog()
+    private val feedbackDialog = FeedbackDialog()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,8 +63,7 @@ class LearnFragment : Fragment() {
             }
 
             cameraButton.setOnClickListener {
-                val intent = Intent(context, CameraXActivity::class.java)
-                startActivity(intent)
+                intentToCamera()
             }
 
             wordbookButton.setOnClickListener {
@@ -74,6 +75,7 @@ class LearnFragment : Fragment() {
             }
         }
     }
+
 
     private fun setObserve() {
         viewModel.apply {
@@ -98,6 +100,11 @@ class LearnFragment : Fragment() {
         }
     }
 
+    private fun intentToCamera() {
+        val intent = Intent(context, CameraXActivity::class.java)
+        startActivity(intent)
+    }
+
     private fun onDrawModeChange(drawMode: DrawMode) {
         if (drawMode == DrawMode.PENCIL) {
             binding.drawModeButton.setImageResource(R.drawable.ic_baseline_eraser_24)
@@ -113,26 +120,48 @@ class LearnFragment : Fragment() {
             return
         }
         if (checkResult.correct) {
-            Toast.makeText(context, "참 잘했어요!!", Toast.LENGTH_SHORT).show()
             viewModel.movePhotoToWordBook()
-            findNavController().navigate(R.id.action_learnFragment_to_wordBookFragment)
+            feedbackDialog.setCorrect(true)
+            feedbackDialog.setOnClickListener {
+                feedbackDialog.dismiss()
+                when (it.id) {
+                    R.id.button_left -> {
+                        intentToCamera()
+                    }
+                    R.id.button_right -> {
+                        findNavController().navigate(R.id.action_learnFragment_to_wordBookFragment)
+                    }
+                }
+            }
+            feedbackDialog.show(parentFragmentManager, "correct answer")
         } else {
-            Toast.makeText(context, "다시한번 써볼까요?", Toast.LENGTH_SHORT).show()
-            wordView.clear()
+            feedbackDialog.setCorrect(false)
+            feedbackDialog.setOnClickListener {
+                feedbackDialog.dismiss()
+                when (it.id) {
+                    R.id.button_left -> {
+                        wordView.clear()
+                    }
+                    R.id.button_right -> {
+                        findNavController().navigate(R.id.action_learnFragment_to_wordBookFragment)
+                    }
+                }
+            }
+            feedbackDialog.show(parentFragmentManager, "wrong answer")
         }
     }
 
     private fun showEditDialog(photo: File) {
         val originLabel = PhotoFiles.getLabel(photo.absolutePath)
-        dialog.originLabel = originLabel
-        dialog.setOnClickListener {
+        editDialog.originLabel = originLabel
+        editDialog.setOnClickListener {
             when (it.id) {
                 R.id.button_terminate -> {
-                    dialog.dismiss()
+                    editDialog.dismiss()
                 }
                 R.id.button_confirm -> {
-                    dialog.dismiss()
-                    var newLabel = dialog.binding.editTextContent.text.toString().trim()
+                    editDialog.dismiss()
+                    var newLabel = editDialog.binding.editTextContent.text.toString().trim()
                     if (newLabel.isBlank()) {
                         newLabel = originLabel
                     }
@@ -143,7 +172,7 @@ class LearnFragment : Fragment() {
                 }
             }
         }
-        dialog.show(parentFragmentManager, "edit dialog")
+        editDialog.show(parentFragmentManager, "edit dialog")
     }
 
     override fun onResume() {

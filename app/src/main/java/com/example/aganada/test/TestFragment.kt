@@ -3,6 +3,7 @@ package com.example.aganada.test
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -35,6 +36,9 @@ class TestFragment : Fragment() {
     }
     private val dialog = FinishDialog()
 
+    private lateinit var goodPlayer: MediaPlayer
+    private lateinit var retryPlayer: MediaPlayer
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -47,15 +51,8 @@ class TestFragment : Fragment() {
         setView()
         setObserve()
 
-        binding.wordView.word = "워드"
-        binding.cameraButton.setOnClickListener {
-            val intent = Intent(context, CameraXActivity::class.java)
-            startActivity(intent)
-        }
-        binding.wordbookButton.setOnClickListener {
-            view.findNavController().navigate(
-                R.id.action_testFragment_to_wordBookFragment)
-        }
+        goodPlayer = MediaPlayer.create(requireContext(), R.raw.good)
+        retryPlayer = MediaPlayer.create(requireContext(), R.raw.retry)
 
         return view
     }
@@ -70,7 +67,17 @@ class TestFragment : Fragment() {
             nextButton.setOnClickListener { this@TestFragment.viewModel.getNext() }
             prevButton.setOnClickListener { this@TestFragment.viewModel.getPrev() }
             shuffleButton.setOnClickListener { this@TestFragment.viewModel.onShuffleClicked() }
+
+            cameraButton.setOnClickListener {
+                val intent = Intent(context, CameraXActivity::class.java)
+                startActivity(intent)
+            }
+            wordbookButton.setOnClickListener {
+                findNavController().navigate(
+                    R.id.action_testFragment_to_wordBookFragment)
+            }
         }
+
     }
 
     private fun setObserve() {
@@ -131,9 +138,11 @@ class TestFragment : Fragment() {
                 showFinishModal()
             }
             Toast.makeText(context, "참 잘했어요!!", Toast.LENGTH_SHORT).show()
+            goodPlayer.start()
             viewModel.getNext()
         } else {
             Toast.makeText(context, "다시한번 써볼까요?", Toast.LENGTH_SHORT).show()
+            retryPlayer.start()
             wordView.clear()
         }
     }

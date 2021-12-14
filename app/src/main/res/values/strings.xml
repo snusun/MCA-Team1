@@ -14,4 +14,5 @@
     <string name="clear_text">clear text</string>
     <string name="redo">redo</string>
     <string name="check">check</string>
+    <string name="feedback_image">feedback_image</string>
 </resources>
