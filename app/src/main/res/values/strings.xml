@@ -8,7 +8,8 @@
     <string name="pref_key_live_preview_object_detector_enable_classification" translatable="false">lpodec</string>
     <string name="pref_key_info_hide" translatable="false">ih</string>
     <string name="to_camera_button">toCameraButton</string>
-    <string name="to_wordbook_button">to wordbook button</string>
+    <string name="to_wordbook_button">toWordbookButton</string>
+    <string name="to_test_button">toTestButton</string>
     <string name="preview">preview</string>
     <string name="undo">undo</string>
     <string name="clear_text">clear text</string>
