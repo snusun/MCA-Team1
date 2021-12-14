@@ -118,7 +118,6 @@ class WordView @JvmOverloads constructor(
         undoStack.clear()
         removingList = null
         pathSet.clear()
-        drawMode = DrawMode.PENCIL
         invalidate()
     }
 
@@ -182,7 +181,7 @@ class WordView @JvmOverloads constructor(
                     this.pathSet.removeAll(removeList)
                     val removingList = removingList?: mutableListOf()
                     removingList.addAll(removeList)
-                    if (removeList.isNotEmpty()) {
+                    if (removingList.isNotEmpty()) {
                         drawOpStack.add(DrawOp(DrawOpType.ERASER, removingList))
                     }
                 }
