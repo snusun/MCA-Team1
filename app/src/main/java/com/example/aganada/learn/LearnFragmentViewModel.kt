@@ -90,5 +90,10 @@ class LearnFragmentViewModel: ViewModel() {
         PhotoFiles.moveTempToWordbook(tempFile)
     }
 
-    data class CheckResult(val correct: Boolean, val label: String, val answer: String)
+    data class CheckResult(
+        val working: Boolean = false,
+        val correct: Boolean = false,
+        val label: String = "",
+        val answer: String = ""
+    )
 }
