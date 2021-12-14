@@ -97,6 +97,11 @@ class LearnFragmentViewModel: ViewModel() {
     }
 
     fun recognizeText(set: Collection<WordView.PathData>) {
+        if (checkResult.value?.working == true) {
+            return
+        }
+        _checkResult.value = CheckResult(working = true)
+        inkManager.getStatus()
         val inkBuilder = Ink.builder()
         for (data in set) {
             val strokeBuilder = Ink.Stroke.builder()
@@ -138,6 +143,11 @@ class LearnFragmentViewModel: ViewModel() {
         */
         return sum
     }
-
-    data class CheckResult(val correct: Boolean, val label: String, val answer: String)
+    
+    data class CheckResult(
+        val working: Boolean = false,
+        val correct: Boolean = false,
+        val label: String = "",
+        val answer: String = ""
+    )
 }

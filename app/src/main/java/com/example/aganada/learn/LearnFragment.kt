@@ -116,6 +116,9 @@ class LearnFragment : Fragment() {
     }
 
     private fun onCheckResultOut(checkResult: LearnFragmentViewModel.CheckResult) {
+        if (checkResult.working){
+            return
+        }
         if (checkResult.correct) {
             viewModel.movePhotoToWordBook()
             feedbackDialog.setCorrect(true)

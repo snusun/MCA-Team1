@@ -130,6 +130,9 @@ class TestFragment : Fragment() {
     }
 
     private fun onCheckResultOut(checkResult: LearnFragmentViewModel.CheckResult) {
+        if (checkResult.working){
+            return
+        }
         if (checkResult.correct) {
             if ((viewModel.index.value?: 0) + 1 == viewModel.wordbook.value?.size) {
                 showFinishModal()

@@ -6,9 +6,14 @@ import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import com.example.aganada.camera.CameraXActivity
+import com.example.aganada.views.InkManager
+import com.example.aganada.views.ModelManager
+import com.google.mlkit.common.model.DownloadConditions
+import com.google.mlkit.common.model.RemoteModelManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,5 +25,15 @@ class SplashActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }, 750)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val modelManager = ModelManager()
+            modelManager.setModel("ko")
+            val isDownloaded = modelManager.checkIsModelDownloaded().await()
+            if (!isDownloaded) {
+                modelManager.download()
+            }
+
+        }
     }
 }
