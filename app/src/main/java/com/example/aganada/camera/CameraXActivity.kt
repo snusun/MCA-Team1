@@ -24,8 +24,6 @@ import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
-import android.view.MotionEvent
-import android.view.View
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.CompoundButton
@@ -56,8 +54,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import android.graphics.Bitmap
-import android.view.OrientationEventListener
-import android.view.Surface
+import android.view.*
 
 /** Live preview demo app for ML Kit APIs using CameraX. */
 @KeepName
@@ -110,11 +107,20 @@ class CameraXActivity :
         val orientationEventListener = object : OrientationEventListener(this as Context) {
             override fun onOrientationChanged(orientation : Int) {
                 // Monitors orientation values to determine the target rotation value
-                val rot : Int = when (orientation) {
-                    in 45..134 -> Surface.ROTATION_270
-                    //in 135..224 -> Surface.ROTATION_180
-                    else -> Surface.ROTATION_90
-                    //else -> Surface.ROTATION_0
+                val winM = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                val rot : Int = when (winM.defaultDisplay.rotation) {
+                    Surface.ROTATION_90 -> {
+                        when (orientation) {
+                            in 45..134 -> Surface.ROTATION_270
+                            else -> Surface.ROTATION_90
+                        }
+                    }
+                    else -> {
+                        when (orientation) {
+                            in 225..314 -> Surface.ROTATION_90
+                            else -> Surface.ROTATION_270
+                        }
+                    }
                 }
                 if (captureUseCase != null && analysisUseCase != null){
                     captureUseCase!!.targetRotation = rot
