@@ -68,6 +68,7 @@ class TestFragment : Fragment() {
             redoButton.setOnClickListener { wordView.reDo() }
             checkButton.setOnClickListener {
                 this@TestFragment.viewModel.recognizeText(wordView.pathSet)
+                wordView.clearPathSet()
             }
             nextButton.setOnClickListener { this@TestFragment.viewModel.getNext() }
             prevButton.setOnClickListener { this@TestFragment.viewModel.getPrev() }

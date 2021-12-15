@@ -60,6 +60,7 @@ class LearnFragment : Fragment() {
             checkButton.setOnClickListener {
                 Log.v("LearnFragment", "Check button clicked.")
                 this@LearnFragment.viewModel.recognizeText(wordView.pathSet)
+                wordView.clearPathSet()
             }
 
             cameraButton.setOnClickListener {

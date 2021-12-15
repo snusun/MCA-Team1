@@ -69,6 +69,9 @@ class LearnFragmentViewModel: ViewModel() {
     }
 
     fun recognizeText(set: Collection<WordView.PathData>) {
+        if (set.isEmpty()) {
+            return
+        }
         if (checkResult.value?.working == true) {
             return
         }
