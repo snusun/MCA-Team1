@@ -84,6 +84,10 @@ class WordView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun clearPathSet() {
+        pathSet.clear()
+    }
+
     fun clear() {
         drawOpStack.clear()
         undoStack.clear()
