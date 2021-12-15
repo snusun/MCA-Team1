@@ -4,6 +4,9 @@ import android.app.Dialog
 import android.content.Context
 import android.media.MediaPlayer
 import android.os.Bundle
+import android.os.VibrationAttributes
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +22,8 @@ class FeedbackDialog: DialogFragment() {
     private var contentRes: Int = 0
     private var mediaRes: Int = 0
     private lateinit var mediaPlayer: MediaPlayer
+    private var isVibrate: Boolean = false
+    private lateinit var vibrator: Vibrator
 
     init {
         setCorrect(false)
@@ -34,6 +39,7 @@ class FeedbackDialog: DialogFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         mediaPlayer = MediaPlayer.create(requireContext(), mediaRes)
+        vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
     }
 
     fun setCorrect(correct: Boolean) {
@@ -43,12 +49,14 @@ class FeedbackDialog: DialogFragment() {
             rightButtonText = "단어장 보기"
             contentRes = R.drawable.ic_good_face
             mediaRes = R.raw.good
+            isVibrate = false
         } else {
             title = "틀렸어요"
             leftButtonText = "다시풀기"
             rightButtonText = "단어장 보기"
             contentRes = R.drawable.ic_bad_face
             mediaRes = R.raw.retry
+            isVibrate = true
         }
     }
 
@@ -81,6 +89,9 @@ class FeedbackDialog: DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.buttonLeft.setOnClickListener(onClickListener)
         binding.buttonRight.setOnClickListener(onClickListener)
+        if (isVibrate) {
+            vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
+        }
         mediaPlayer.start()
     }
 }

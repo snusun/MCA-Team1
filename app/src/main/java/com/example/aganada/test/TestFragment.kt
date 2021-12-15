@@ -1,10 +1,13 @@
 package com.example.aganada.test
 
+import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.media.MediaPlayer
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,6 +41,7 @@ class TestFragment : Fragment() {
 
     private lateinit var goodPlayer: MediaPlayer
     private lateinit var retryPlayer: MediaPlayer
+    private lateinit var vibrator: Vibrator
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,6 +57,7 @@ class TestFragment : Fragment() {
 
         goodPlayer = MediaPlayer.create(requireContext(), R.raw.good)
         retryPlayer = MediaPlayer.create(requireContext(), R.raw.retry)
+        vibrator = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
         return view
     }
@@ -63,6 +68,7 @@ class TestFragment : Fragment() {
             redoButton.setOnClickListener { wordView.reDo() }
             checkButton.setOnClickListener {
                 this@TestFragment.viewModel.recognizeText(wordView.pathSet)
+                wordView.clearPathSet()
             }
             nextButton.setOnClickListener { this@TestFragment.viewModel.getNext() }
             prevButton.setOnClickListener { this@TestFragment.viewModel.getPrev() }
@@ -143,6 +149,7 @@ class TestFragment : Fragment() {
         } else {
             Toast.makeText(context, "다시한번 써볼까요?", Toast.LENGTH_SHORT).show()
             retryPlayer.start()
+            vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
             wordView.clear()
         }
     }
