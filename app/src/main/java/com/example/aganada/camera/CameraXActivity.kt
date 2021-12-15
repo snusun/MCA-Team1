@@ -56,6 +56,8 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import android.graphics.Bitmap
+import android.view.OrientationEventListener
+import android.view.Surface
 
 /** Live preview demo app for ML Kit APIs using CameraX. */
 @KeepName
@@ -104,6 +106,24 @@ class CameraXActivity :
         preview_view.setOnTouchListener { _, motionEvent -> takePhoto(motionEvent) }
         outputDirectory = getOutputDirectory()
         ko_labels = getKoLabels()
+
+        val orientationEventListener = object : OrientationEventListener(this as Context) {
+            override fun onOrientationChanged(orientation : Int) {
+                // Monitors orientation values to determine the target rotation value
+                val rot : Int = when (orientation) {
+                    in 45..134 -> Surface.ROTATION_270
+                    in 135..224 -> Surface.ROTATION_180
+                    in 225..314 -> Surface.ROTATION_90
+                    else -> Surface.ROTATION_0
+                }
+                if (captureUseCase != null && analysisUseCase != null){
+                    captureUseCase!!.targetRotation = rot
+                    analysisUseCase!!.targetRotation = rot
+                    Log.d("ROTATION", rot.toString())
+                }
+            }
+        }
+        orientationEventListener.enable()
 
 
         ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(application))
@@ -205,7 +225,7 @@ class CameraXActivity :
         }
         Toast.makeText(
             applicationContext,
-            "This device does not have lens with facing: $newLensFacing",
+            "본 디바이스에는 정방향 렌즈가 존재하지 않습니다.",
             Toast.LENGTH_SHORT
         )
             .show()
@@ -214,6 +234,8 @@ class CameraXActivity :
     public override fun onResume() {
         super.onResume()
         bindAllCameraUseCases()
+        // Hide the action bar.
+        supportActionBar?.hide()
     }
 
     override fun onPause() {
@@ -303,7 +325,7 @@ class CameraXActivity :
                 Log.e(TAG, "Can not create image processor: $selectedModel", e)
                 Toast.makeText(
                     applicationContext,
-                    "Can not create image processor: " + e.localizedMessage,
+                    "이미지 프로세서를 구현하지 못 했습니다: " + e.localizedMessage,
                     Toast.LENGTH_LONG
                 )
                     .show()
@@ -360,7 +382,7 @@ class CameraXActivity :
             // Case 1: no detected object in current image
             if(objectDetectorProcessor?.getDetectedObjects().isNullOrEmpty()){
                 Log.e(TAG, "Tried to save the image of a non-detected object")
-                Toast.makeText(baseContext, "No objects were detected. Please point the camera to a valid object",
+                Toast.makeText(baseContext, "인식하지 못 했습니다. 다시 찍어주세요!",
                     Toast.LENGTH_SHORT).show()
                 return Pair(null, null)
             }
@@ -404,13 +426,13 @@ class CameraXActivity :
                     Log.d("HYUNSOO", "targetboundingbox is null... touched outside a valid box" +
                             captureTouchCoords.toString() + ", " + targetBoundingBox.toString()
                     )
-                    Toast.makeText(baseContext, "Touched outside a valid box. Please touch inside a box.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "네모칸 안쪽을 터치해주세요!.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
         else{
             Log.e(TAG, "ObjectDetectorProcessor was not properly instantiated")
-            Toast.makeText(baseContext, "Object Detector was not properly instantiated", Toast.LENGTH_SHORT).show()
+            Toast.makeText(baseContext, "ObjectDetector가 제대로 시작되지 못 했습니다.", Toast.LENGTH_SHORT).show()
         }
         return Pair(null, null)
     }
@@ -489,7 +511,6 @@ class CameraXActivity :
             // Close stream
             stream.close()
             Log.d("11-19", "Successfully saved image at ${photoFile.absoluteFile}")
-            Toast.makeText(baseContext, "Saved image", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, MainActivity::class.java).apply {
                 putExtra("captured_image_name", Uri.parse(photoFile.absolutePath).toString())
             }
