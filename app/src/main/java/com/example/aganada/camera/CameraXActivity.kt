@@ -107,17 +107,17 @@ class CameraXActivity :
         val orientationEventListener = object : OrientationEventListener(this as Context) {
             override fun onOrientationChanged(orientation : Int) {
                 // Monitors orientation values to determine the target rotation value
-                val winM = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-                val rot : Int = when (winM.defaultDisplay.rotation) {
+                val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                val rot : Int = when (windowManager.defaultDisplay.rotation) {
                     Surface.ROTATION_90 -> {
                         when (orientation) {
-                            in 45..134 -> Surface.ROTATION_270
+                            in 46..134 -> Surface.ROTATION_270
                             else -> Surface.ROTATION_90
                         }
                     }
                     else -> {
                         when (orientation) {
-                            in 225..314 -> Surface.ROTATION_90
+                            in 226..314 -> Surface.ROTATION_90
                             else -> Surface.ROTATION_270
                         }
                     }
