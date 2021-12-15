@@ -382,7 +382,7 @@ class CameraXActivity :
             // Case 1: no detected object in current image
             if(objectDetectorProcessor?.getDetectedObjects().isNullOrEmpty()){
                 Log.e(TAG, "Tried to save the image of a non-detected object")
-                Toast.makeText(baseContext, "그 어떤 물건도 발견되지 않았습니다. 카메라로 물건을 다시 찍어주세요.",
+                Toast.makeText(baseContext, "인식하지 못 했습니다. 다시 찍어주세요!",
                     Toast.LENGTH_SHORT).show()
                 return Pair(null, null)
             }
@@ -426,7 +426,7 @@ class CameraXActivity :
                     Log.d("HYUNSOO", "targetboundingbox is null... touched outside a valid box" +
                             captureTouchCoords.toString() + ", " + targetBoundingBox.toString()
                     )
-                    Toast.makeText(baseContext, "박스 밖을 터치했습니다. 박스 내부를 터치해주세요.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "네모칸 안쪽을 터치해주세요!.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -511,7 +511,6 @@ class CameraXActivity :
             // Close stream
             stream.close()
             Log.d("11-19", "Successfully saved image at ${photoFile.absoluteFile}")
-            Toast.makeText(baseContext, "이미지가 저장되었습니다.", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, MainActivity::class.java).apply {
                 putExtra("captured_image_name", Uri.parse(photoFile.absolutePath).toString())
             }
