@@ -11,6 +11,7 @@ import android.view.View
 import android.graphics.PointF
 import com.example.aganada.R
 import com.google.mlkit.vision.digitalink.Ink
+import kr.bydelta.koala.dissembleHangul
 import kotlin.math.atan2
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -52,6 +53,8 @@ class WordView @JvmOverloads constructor(
     private var eraserPath: Path? = null
     private var eraserPoint: PointF? = null
 
+    private val horizonNucleus = arrayListOf(Char(0x1169), Char(0x116D),
+        Char(0x116E), Char(0x1172), Char(0x1173))
 
     init {
         for (c in 'A'..'Z') {
@@ -190,6 +193,7 @@ class WordView @JvmOverloads constructor(
         measureFontSize()
     }
 
+    @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canvas?: return
@@ -197,12 +201,14 @@ class WordView @JvmOverloads constructor(
 
         /* draw word */
         run {
+            paint.textSize = (fontSize * 0.8).toFloat()
             val fm = paint.fontMetrics
+            val textWidth = paint.measureText(word)
             val textHeight = (fm.descent - fm.ascent) / 2
+            val textSpace = (fm.bottom - fm.top)
 
             paint.color = Color.parseColor("#22000000")
             paint.style = Paint.Style.FILL
-            paint.textSize = fontSize
             paint.textAlign = Paint.Align.CENTER
 
             val textX = (width shr 1).toFloat()
@@ -212,7 +218,50 @@ class WordView @JvmOverloads constructor(
             paint.color = Color.parseColor("#44000000")
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = lineWidth
+            print(fm)
             canvas.drawText(word, textX, textY, paint)
+        }
+
+        run {
+            val fm = paint.fontMetrics
+            val textHeight = (fm.descent - fm.ascent) / 2
+            val textMarHeight = (fm.bottom - fm.top) * 0.75
+            val textWidths =  word.map { c -> paint.measureText(c.toString()) }
+            Log.d("WordView", textWidths.toString())
+            var textStart = ((width - textWidths.sum()) / 2)
+            val textY = centerY + textHeight / 2
+            paint.textAlign = Paint.Align.LEFT
+            paint.textSize = 60f
+            paint.color = Color.parseColor("#55000000")
+            paint.style = Paint.Style.FILL
+
+            val stroke = strokes(word)
+            for (i in stroke.indices) {
+                when(stroke[i]){
+                    1 -> {
+                        canvas.drawText("1", textStart, (textY - textMarHeight).toFloat(), paint)
+                        canvas.drawText("2", textStart, textY + textHeight/2, paint)
+                    }
+                    2 -> {
+                        canvas.drawText("1", textStart, (textY - textMarHeight).toFloat(), paint)
+                        canvas.drawText("2", (textStart + textWidths[i] * 0.8).toFloat(),
+                            (textY - textMarHeight).toFloat(), paint)
+                    }
+                    3 -> {
+                        canvas.drawText("1", textStart, (textY - textMarHeight).toFloat(), paint)
+                        canvas.drawText("2", textStart, (textY + textHeight * 0.2).toFloat(), paint)
+                        canvas.drawText("3", textStart, textY + textHeight/2, paint)
+                    }
+                    4 -> {
+                        canvas.drawText("1", textStart, (textY - textMarHeight).toFloat(), paint)
+                        canvas.drawText("2", (textStart + textWidths[i] * 0.8).toFloat(),
+                            (textY - textMarHeight).toFloat(), paint)
+                        canvas.drawText("3", textStart, textY + textHeight/2, paint)
+                    }
+
+                }
+                textStart += textWidths[i]
+            }
         }
 
         /* draw line */
@@ -238,6 +287,25 @@ class WordView @JvmOverloads constructor(
                 }
             }
         }
+    }
+
+    fun strokes(label: String): IntArray {
+        val strList = IntArray(label.length) { 0 }
+        for (i in label.indices) {
+            if (label[i].dissembleHangul() == null) {
+                strList[i] = 0
+                continue
+            }
+            val char = label[i].dissembleHangul()?.toList() as List<*>
+            if(char[2]==null){
+                if(char[1] in horizonNucleus) strList[i] = 1
+                else strList[i] = 2
+            } else {
+                if(char[1] in horizonNucleus) strList[i] = 3
+                else strList[i] = 4
+            }
+        }
+        return strList
     }
 
     inner class PathData(x: Float, y: Float) {
