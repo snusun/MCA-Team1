@@ -112,9 +112,9 @@ class CameraXActivity :
                 // Monitors orientation values to determine the target rotation value
                 val rot : Int = when (orientation) {
                     in 45..134 -> Surface.ROTATION_270
-                    in 135..224 -> Surface.ROTATION_180
-                    in 225..314 -> Surface.ROTATION_90
-                    else -> Surface.ROTATION_0
+                    //in 135..224 -> Surface.ROTATION_180
+                    else -> Surface.ROTATION_90
+                    //else -> Surface.ROTATION_0
                 }
                 if (captureUseCase != null && analysisUseCase != null){
                     captureUseCase!!.targetRotation = rot
