@@ -201,6 +201,7 @@ class WordView @JvmOverloads constructor(
 
         /* draw word */
         run {
+            paint.textSize = (fontSize * 0.8).toFloat()
             val fm = paint.fontMetrics
             val textWidth = paint.measureText(word)
             val textHeight = (fm.descent - fm.ascent) / 2
@@ -208,7 +209,6 @@ class WordView @JvmOverloads constructor(
 
             paint.color = Color.parseColor("#22000000")
             paint.style = Paint.Style.FILL
-            paint.textSize = (fontSize * 0.8).toFloat()
             paint.textAlign = Paint.Align.CENTER
 
             val textX = (width shr 1).toFloat()
@@ -225,7 +225,7 @@ class WordView @JvmOverloads constructor(
         run {
             val fm = paint.fontMetrics
             val textHeight = (fm.descent - fm.ascent) / 2
-            val textMarHeight = (fm.bottom - fm.top) * 0.7
+            val textMarHeight = (fm.bottom - fm.top) * 0.75
             val textWidths =  word.map { c -> paint.measureText(c.toString()) }
             Log.d("WordView", textWidths.toString())
             var textStart = ((width - textWidths.sum()) / 2)
