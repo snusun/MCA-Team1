@@ -214,6 +214,8 @@ class CameraXActivity :
     public override fun onResume() {
         super.onResume()
         bindAllCameraUseCases()
+        // Hide the action bar.
+        supportActionBar?.hide()
     }
 
     override fun onPause() {
