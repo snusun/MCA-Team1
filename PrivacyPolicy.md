@@ -5,7 +5,7 @@ Welcome to Aganada application for Android!
 
 This privacy policy governs your use of the mobile application "Aganada (아가나다)" (later referred to as "application") for Android, created by _Jaehyoung Park_, _Jongsun Yun_, _Hyunsoo Kim_ and _Sunyoung Hwang_ as a project for the Mobile Computing and Applications course of Seoul National University. It describes our policies and procedures on the collection, usage and disclosure of your information when you use the service and tells you about your privacy rights.
 We use your personal data to provice our service. By using our application, you are agreeing to the usage of your information.
-Aganada is an open source Android application, whose source code can be found on GitHub (link) under the MIT license.
+Aganada is an open source Android application, whose source code can be found on GitHub ([LINK TO GITHUB PAGE](https://github.com/snusun/MCA-Team1/tree/deploy )) under the MIT license.
 
 ## Information Obtained, Used, Retained and Shared
 ### User Provided Information
@@ -33,8 +33,9 @@ Please be aware that, although we endeavor to provide reasonable security for in
 To maximize security of your mobile device, we advise you to regularly check for any Android OS update(s) that could be available and to enable automatic updates.
 
 ## Changes
-This Privacy Policy may be updated from time to time for any reason. We will notify you of any changes to our Privacy Policy by posting the new Privacy Policy at link (TODO) and update the "Last updated" date at the top of this Privacy Policy.
-You are advised to review this Privacy Policy periodically for any changes, as continued use of our application is considered as an approval of all changes to our privacy policy. Changes to this Privacy Policy are effective when they are posted on this page, and the history of this policy can be viewed here (LINK TODO).
+This Privacy Policy may be updated from time to time for any reason. We will notify you of any changes to our Privacy Policy by posting the new Privacy Policy at [link](https://github.com/snusun/MCA-Team1/blob/deploy/PrivacyPolicy.md
+) and update the "Last updated" date at the top of this Privacy Policy.
+You are advised to review this Privacy Policy periodically for any changes, as continued use of our application is considered as an approval of all changes to our privacy policy. Changes to this Privacy Policy are effective when they are posted on this page, and the history of this policy can be viewed [here](https://github.com/snusun/MCA-Team1/commits/deploy/PrivacyPolicy.md).
 
 ## Consent
 By using the Application, you consent to the local processing of your information.
