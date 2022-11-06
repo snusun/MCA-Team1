@@ -325,14 +325,14 @@ abstract class VisionProcessorBase<T>(context: Context) : VisionImageProcessor {
                         //            totalFrameMs / numRuns
                         // )
                         // Log.d(
-                            TAG,
-                            "Detector latency: max=" +
-                                    maxDetectorMs +
-                                    ", min=" +
-                                    minDetectorMs +
-                                    ", avg=" +
-                                    totalDetectorMs / numRuns
-                        )
+                        //    TAG,
+                        //    "Detector latency: max=" +
+                        //            maxDetectorMs +
+                        //            ", min=" +
+                        //           minDetectorMs +
+                        //            ", avg=" +
+                        //            totalDetectorMs / numRuns
+                        // )
                         val mi = ActivityManager.MemoryInfo()
                         activityManager.getMemoryInfo(mi)
                         val availableMegs: Long = mi.availMem / 0x100000L

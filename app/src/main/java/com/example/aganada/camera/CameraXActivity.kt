@@ -431,7 +431,7 @@ class CameraXActivity :
                 else{
                     // Log.d("HYUNSOO", "targetboundingbox is null... touched outside a valid box" +
                     //        captureTouchCoords.toString() + ", " + targetBoundingBox.toString()
-                    )
+                    // )
                     Toast.makeText(baseContext, "네모칸 안쪽을 터치해주세요!.", Toast.LENGTH_SHORT).show()
                 }
             }
