@@ -62,7 +62,7 @@ class TestFragmentViewModel: ViewModel() {
 
     fun loadPhoto(context: Context) {
         val wordbook = PhotoFiles.getWordbook(context)
-        Log.d("wordbook", "wordbook size: ${wordbook.size} label: ${wordbook.firstOrNull()?.absolutePath?: ""}")
+        // Log.d("wordbook", "wordbook size: ${wordbook.size} label: ${wordbook.firstOrNull()?.absolutePath?: ""}")
         _shuffled.value = false
         _wordbook.value = wordbook
         setIndex(0)

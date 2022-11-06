@@ -120,7 +120,7 @@ class WordBookFragment : Fragment() {
             }
         }
         editDialog.originLabel = card.getLabel()
-        Log.d("JHTEST", "Label : ${editDialog.originLabel}")
+        // Log.d("JHTEST", "Label : ${editDialog.originLabel}")
         activity?.runOnUiThread {
             editDialog.show(parentFragmentManager, "wordbook edit dialog")
         }

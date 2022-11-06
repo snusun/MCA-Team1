@@ -43,7 +43,7 @@ class LearnFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        Log.d("LearnFragment", "onCreateView")
+        // Log.d("LearnFragment", "onCreateView")
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_learn, container, false)
         binding.viewModel = viewModel
 

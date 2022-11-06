@@ -86,7 +86,7 @@ class CameraXActivity :
     @RequiresApi(VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate")
+        // Log.d(TAG, "onCreate")
         if (savedInstanceState != null) {
             selectedModel = savedInstanceState.getString(STATE_SELECTED_MODEL, OBJECT_DETECTION_CUSTOM)
         }
@@ -94,11 +94,11 @@ class CameraXActivity :
         setContentView(R.layout.activity_vision_camerax_live_preview)
         previewView = findViewById(R.id.preview_view)
         if (previewView == null) {
-            Log.d(TAG, "previewView is null")
+            // Log.d(TAG, "previewView is null")
         }
         graphicOverlay = findViewById(R.id.graphic_overlay)
         if (graphicOverlay == null) {
-            Log.d(TAG, "graphicOverlay is null")
+            // Log.d(TAG, "graphicOverlay is null")
         }
         preview_view.setOnTouchListener { _, motionEvent -> takePhoto(motionEvent) }
         outputDirectory = getOutputDirectory()
@@ -125,7 +125,7 @@ class CameraXActivity :
                 if (captureUseCase != null && analysisUseCase != null){
                     captureUseCase!!.targetRotation = rot
                     analysisUseCase!!.targetRotation = rot
-                    Log.d("ROTATION", rot.toString())
+                    // Log.d("ROTATION", rot.toString())
                 }
             }
         }
@@ -166,14 +166,14 @@ class CameraXActivity :
         var dir = File(dataDir.canonicalPath+File.separator+"files/tmp")
         if(!dir.exists()) {
             dir.mkdir()
-            Log.d("OUTPUTDIR", "make directory")
+            // Log.d("OUTPUTDIR", "make directory")
         }
-        Log.d("OUTPUTDIR", dir.toString())
+        // Log.d("OUTPUTDIR", dir.toString())
         return dir
     }
 
     private fun takePhoto(event: MotionEvent): Boolean{
-        Log.d(TAG, "takePhoto - ${event.action}")
+        // Log.d(TAG, "takePhoto - ${event.action}")
         return when(event.action){
             MotionEvent.ACTION_DOWN -> true
             MotionEvent.ACTION_MOVE -> true
@@ -199,7 +199,7 @@ class CameraXActivity :
         // An item was selected. You can retrieve the selected item using
         // parent.getItemAtPosition(pos)
         selectedModel = parent?.getItemAtPosition(pos).toString()
-        Log.d(TAG, "Selected model: $selectedModel")
+        // Log.d(TAG, "Selected model: $selectedModel")
         bindAnalysisUseCase()
     }
 
@@ -220,7 +220,7 @@ class CameraXActivity :
         val newCameraSelector = CameraSelector.Builder().requireLensFacing(newLensFacing).build()
         try {
             if (cameraProvider!!.hasCamera(newCameraSelector)) {
-                Log.d(TAG, "Set facing to " + newLensFacing)
+                // Log.d(TAG, "Set facing to " + newLensFacing)
                 lensFacing = newLensFacing
                 cameraSelector = newCameraSelector
                 bindAllCameraUseCases()
@@ -256,7 +256,7 @@ class CameraXActivity :
     }
 
     private fun bindAllCameraUseCases() {
-        Log.d(TAG, "bindAllCameraUseCases")
+        // Log.d(TAG, "bindAllCameraUseCases")
         if (cameraProvider != null) {
             // As required by CameraX API, unbinds all use cases before trying to re-bind any of them.
             cameraProvider!!.unbindAll()
@@ -368,7 +368,7 @@ class CameraXActivity :
                     imageProcessor?.processImageProxy(imageProxy, graphicOverlay)
                     if(capture){
                         capture = false
-                        Log.d("HYUNSOO", "capture is on -> save image -$capture")
+                        // Log.d("HYUNSOO", "capture is on -> save image -$capture")
                         capturePhoto(imageProxy)
                     }
 
@@ -382,9 +382,9 @@ class CameraXActivity :
     }
 
     private fun getDetectionInfo(image: ImageProxy): Pair<Rect?, String?>{
-        Log.d("HYUNSOO", "saveImage -$capture")
+        // Log.d("HYUNSOO", "saveImage -$capture")
         if(objectDetectorProcessor != null){
-            Log.d(TAG, "ObjectDetectorProcessor properly instantiated")
+            // Log.d(TAG, "ObjectDetectorProcessor properly instantiated")
             // Case 1: no detected object in current image
             if(objectDetectorProcessor?.getDetectedObjects().isNullOrEmpty()){
                 Log.e(TAG, "Tried to save the image of a non-detected object")
@@ -402,9 +402,9 @@ class CameraXActivity :
                 // Get detection info for the touched image
                 for (detectedObject in detectedObjects) {
                     targetBoundingBoxF = convertCoordinates(detectedObject.boundingBox, image)
-                    Log.d("HYUNSOO", "F coordinates - " + targetBoundingBoxF!!.left + " " +
-                            targetBoundingBoxF.top + " " + targetBoundingBoxF.right + " " +
-                            targetBoundingBoxF.bottom)
+                    // Log.d("HYUNSOO", "F coordinates - " + targetBoundingBoxF!!.left + " " +
+                    //        targetBoundingBoxF.top + " " + targetBoundingBoxF.right + " " +
+                    //        targetBoundingBoxF.bottom)
                     if (targetBoundingBoxF.contains(
                             captureTouchCoords!!.first.toFloat(),
                             captureTouchCoords!!.second.toFloat()
@@ -418,7 +418,7 @@ class CameraXActivity :
                                 targetLabel = label.text
                             }
                         }
-                        Log.d("HYUNSOO", "touched inside box")
+                        // Log.d("HYUNSOO", "touched inside box")
                         break
                     }
                 }
@@ -429,8 +429,8 @@ class CameraXActivity :
                 }
                 // Case 2-2: touched outside all detected objects' boxes
                 else{
-                    Log.d("HYUNSOO", "targetboundingbox is null... touched outside a valid box" +
-                            captureTouchCoords.toString() + ", " + targetBoundingBox.toString()
+                    // Log.d("HYUNSOO", "targetboundingbox is null... touched outside a valid box" +
+                    //        captureTouchCoords.toString() + ", " + targetBoundingBox.toString()
                     )
                     Toast.makeText(baseContext, "네모칸 안쪽을 터치해주세요!.", Toast.LENGTH_SHORT).show()
                 }
@@ -470,7 +470,7 @@ class CameraXActivity :
         var finalLabel = targetLabel
         try {
             finalLabel = ko_labels!!.get(targetLabel) as String
-            Log.d("TRANSLATION", "$finalLabel")
+            // Log.d("TRANSLATION", "$finalLabel")
         } catch (e: JSONException){
             e.printStackTrace()
         }
@@ -486,25 +486,25 @@ class CameraXActivity :
             outputDirectory, "temp.jpeg");
         val source = ImageDecoder.createSource(tempFile);
         val bitmap = ImageDecoder.decodeBitmap(source);
-        Log.d("11-19", "targetBoundingBox before: ${targetBoundingBox.left}, ${targetBoundingBox.right}," +
-                "${targetBoundingBox.top}, ${targetBoundingBox.bottom}")
+        // Log.d("11-19", "targetBoundingBox before: ${targetBoundingBox.left}, ${targetBoundingBox.right}," +
+        //        "${targetBoundingBox.top}, ${targetBoundingBox.bottom}")
         targetBoundingBox = Rect(targetBoundingBox.left * bitmap.width / image.width,
         targetBoundingBox.top * bitmap.height / image.height,
             targetBoundingBox.right * bitmap.width / image.width,
             targetBoundingBox.bottom * bitmap.height / image.height)
-        Log.d("11-19", "image: ${image.width}, ${image.height}")
-        Log.d("11-19", "bitmap: ${bitmap.width}, ${bitmap.height}")
-        Log.d("11-19", "targetBoundingBox after: ${targetBoundingBox.left}, ${targetBoundingBox.right}," +
-                "${targetBoundingBox.top}, ${targetBoundingBox.bottom}")
+        // Log.d("11-19", "image: ${image.width}, ${image.height}")
+        // Log.d("11-19", "bitmap: ${bitmap.width}, ${bitmap.height}")
+        // Log.d("11-19", "targetBoundingBox after: ${targetBoundingBox.left}, ${targetBoundingBox.right}," +
+        //        "${targetBoundingBox.top}, ${targetBoundingBox.bottom}")
         val croppedBitmap = Bitmap.createBitmap(bitmap,
             targetBoundingBox.left, targetBoundingBox.top,
             targetBoundingBox.width(), targetBoundingBox.height())
 
-        Log.d("11-19", "image: ${image.width}, ${image.height}")
-        Log.d("11-19", "targetBoundingBox: ${targetBoundingBox.left}, ${targetBoundingBox.right}," +
-                "${targetBoundingBox.top}, ${targetBoundingBox.bottom}")
-        Log.d("11-19", "bitmap: ${bitmap.width}, ${bitmap.height}")
-        Log.d("11-19", "croppedBitmap: ${croppedBitmap.width}, ${croppedBitmap.height}")
+        // Log.d("11-19", "image: ${image.width}, ${image.height}")
+        // Log.d("11-19", "targetBoundingBox: ${targetBoundingBox.left}, ${targetBoundingBox.right}," +
+        //        "${targetBoundingBox.top}, ${targetBoundingBox.bottom}")
+        // Log.d("11-19", "bitmap: ${bitmap.width}, ${bitmap.height}")
+        // Log.d("11-19", "croppedBitmap: ${croppedBitmap.width}, ${croppedBitmap.height}")
 
         // Save image to file
         try {
@@ -516,7 +516,7 @@ class CameraXActivity :
 
             // Close stream
             stream.close()
-            Log.d("11-19", "Successfully saved image at ${photoFile.absoluteFile}")
+            // Log.d("11-19", "Successfully saved image at ${photoFile.absoluteFile}")
             val intent = Intent(this, MainActivity::class.java).apply {
                 putExtra("captured_image_name", Uri.parse(photoFile.absolutePath).toString())
             }
@@ -531,26 +531,26 @@ class CameraXActivity :
         Width must always be 4, height is 3
      */
     private fun maintainRatio(box: Rect, bitmapWidth: Int, bitmapHeight: Int): Rect{
-        Log.d("RATIO", box.flattenToString())
+        // Log.d("RATIO", box.flattenToString())
         var newWidth: Float;
         var newHeight: Float;
         // find the larger edge and fix it to calculate the other in-ratio edge length
         if ( box.width() > box.height() ){
             newWidth = box.width().toFloat()
             newHeight = (newWidth * 3 / 4 + 1)
-            Log.d("RATIO", "${box.width()} -> new height: ${(newWidth * (3/4) + 1).toFloat()} vs $newHeight")
+            // Log.d("RATIO", "${box.width()} -> new height: ${(newWidth * (3/4) + 1).toFloat()} vs $newHeight")
         }
         else{
             newHeight = box.height().toFloat()
             newWidth = (newHeight * 4 / 3 + 1)
-            Log.d("RATIO", "${box.height()} -> new width: ${(newHeight * (4/3) + 1).toFloat()} vs $newWidth")
+            // Log.d("RATIO", "${box.height()} -> new width: ${(newHeight * (4/3) + 1).toFloat()} vs $newWidth")
         }
         // center the box
         var dx = ((newWidth - box.width()) / 2).toInt()
         var dy = ((newHeight - box.height()) / 2).toInt()
         box.set(box.left-dx, box.top-dy, box.right+dx, box.bottom+dy)
 
-        Log.d("RATIO", "newBox $dx, $dy -> ${box.flattenToString()}")
+        // Log.d("RATIO", "newBox $dx, $dy -> ${box.flattenToString()}")
 
         // Handle illegal argument exception
         if (box.width() > bitmapWidth || box.height() > bitmapHeight){
@@ -572,7 +572,7 @@ class CameraXActivity :
             dy = box.bottom - bitmapHeight
             box.set(box.left, box.top-dy, box.right, bitmapHeight)
         }
-        Log.d("RATIO", "return valid coordinates ${box.flattenToString()}, $bitmapHeight, $bitmapWidth")
+        // Log.d("RATIO", "return valid coordinates ${box.flattenToString()}, $bitmapHeight, $bitmapWidth")
         return box
     }
 
@@ -586,19 +586,19 @@ class CameraXActivity :
         var postScaleHeightOffset = 0F
         var scaleFactor = 1.0F
         if (viewAspectRatio > imageAspectRatio) {
-            Log.d("HYUNSOO", "height is scaled")
+            // Log.d("HYUNSOO", "height is scaled")
             // The image needs to be vertically cropped to be displayed in this view.
             scaleFactor = (width / imageWidth).toFloat()
             postScaleHeightOffset = (width / imageAspectRatio - height) / 2
         } else {
-            Log.d("HYUNSOO", "width is scaled")
+            // Log.d("HYUNSOO", "width is scaled")
             // The image needs to be horizontally cropped to be displayed in this view.
             scaleFactor = (height / imageHeight).toFloat()
             postScaleWidthOffset = (height * imageAspectRatio - width) / 2
         }
-        Log.d("HYUNSOO", "image ($imageHeight, $imageWidth) / view ($height, $width) " +
-                "/ ratios ($imageAspectRatio, $viewAspectRatio) / " +
-                "scaleH ($postScaleHeightOffset, $postScaleWidthOffset, $scaleFactor) /")
+        // Log.d("HYUNSOO", "image ($imageHeight, $imageWidth) / view ($height, $width) " +
+        //        "/ ratios ($imageAspectRatio, $viewAspectRatio) / " +
+        //        "scaleH ($postScaleHeightOffset, $postScaleWidthOffset, $scaleFactor) /")
         return Pair(abs(x*scaleFactor - postScaleWidthOffset), abs(y*scaleFactor -  postScaleHeightOffset))
     }
 

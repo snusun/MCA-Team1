@@ -43,7 +43,7 @@ class ObjectGraphic constructor(
 
     override fun draw(canvas: Canvas) {
         if (detectedObject.labels.isNullOrEmpty()){
-            Log.d("OBJECT-GRAPHIC", "Skip drawing bounding box")
+            // Log.d("OBJECT-GRAPHIC", "Skip drawing bounding box")
             return
         }
         assert(detectedObject.labels.isNotEmpty())

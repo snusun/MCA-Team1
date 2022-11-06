@@ -314,17 +314,17 @@ abstract class VisionProcessorBase<T>(context: Context) : VisionImageProcessor {
                     // Only log inference info once per second. When frameProcessedInOneSecondInterval is
                     // equal to 1, it means this is the first frame processed during the current second.
                     if (frameProcessedInOneSecondInterval == 1) {
-                        Log.d(TAG, "Num of Runs: $numRuns")
-                        Log.d(
-                            TAG,
-                            "Frame latency: max=" +
-                                    maxFrameMs +
-                                    ", min=" +
-                                    minFrameMs +
-                                    ", avg=" +
-                                    totalFrameMs / numRuns
-                        )
-                        Log.d(
+                        // Log.d(TAG, "Num of Runs: $numRuns")
+                        // Log.d(
+                        //    TAG,
+                        //    "Frame latency: max=" +
+                        //            maxFrameMs +
+                        //            ", min=" +
+                        //            minFrameMs +
+                        //           ", avg=" +
+                        //            totalFrameMs / numRuns
+                        // )
+                        // Log.d(
                             TAG,
                             "Detector latency: max=" +
                                     maxDetectorMs +
@@ -336,7 +336,7 @@ abstract class VisionProcessorBase<T>(context: Context) : VisionImageProcessor {
                         val mi = ActivityManager.MemoryInfo()
                         activityManager.getMemoryInfo(mi)
                         val availableMegs: Long = mi.availMem / 0x100000L
-                        Log.d(TAG, "Memory available in system: $availableMegs MB")
+                        // Log.d(TAG, "Memory available in system: $availableMegs MB")
                     }
                     graphicOverlay.clear()
                     if (originalCameraImage != null) {
@@ -371,7 +371,7 @@ abstract class VisionProcessorBase<T>(context: Context) : VisionImageProcessor {
                         Toast.LENGTH_SHORT
                     )
                         .show()
-                    Log.d(TAG, error)
+                    // Log.d(TAG, error)
                     e.printStackTrace()
                     this@VisionProcessorBase.onFailure(e)
                 }

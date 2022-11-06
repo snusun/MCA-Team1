@@ -40,7 +40,7 @@ class EditDialog: DialogFragment() {
         binding.editTextContent.post {
             binding.editTextContent.hint = originLabel
             binding.editTextContent.setText(originLabel)
-            Log.d("JHTEST", "Text: ${binding.editTextContent.text}")
+            // Log.d("JHTEST", "Text: ${binding.editTextContent.text}")
         }
         return binding.root
     }

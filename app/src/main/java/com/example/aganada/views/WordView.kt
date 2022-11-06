@@ -58,7 +58,7 @@ class WordView @JvmOverloads constructor(
 
     init {
         for (c in 'A'..'Z') {
-            Log.d("charsize", paint.measureText(c.toString()).toString())
+            // Log.d("charsize", paint.measureText(c.toString()).toString())
 
         }
     }
@@ -201,7 +201,7 @@ class WordView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canvas?: return
-//        Log.d("WordView", "onDraw $centerX $centerY")
+//        // Log.d("WordView", "onDraw $centerX $centerY")
 
         /* draw word */
         run {
@@ -231,7 +231,7 @@ class WordView @JvmOverloads constructor(
             val textHeight = (fm.descent - fm.ascent) / 2
             val textMarHeight = (fm.bottom - fm.top) * 0.75
             val textWidths =  word.map { c -> paint.measureText(c.toString()) }
-            Log.d("WordView", textWidths.toString())
+            // Log.d("WordView", textWidths.toString())
             var textStart = ((width - textWidths.sum()) / 2)
             val textY = centerY + textHeight / 2
             paint.textAlign = Paint.Align.LEFT

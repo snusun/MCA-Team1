@@ -74,7 +74,7 @@ class FlipCardLayout private constructor(context: Context,
     fun load() {
         Glide.with(context).load(file).into(imageView)
         setText(getLabel())
-        Log.d("JHTEST", getLabel())
+        // Log.d("JHTEST", getLabel())
     }
 
     private fun setText(label: String) {
@@ -83,9 +83,9 @@ class FlipCardLayout private constructor(context: Context,
         textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, (layoutParams.height - paddingTop - paddingBottom).toFloat() / 3)
 
         val textWidthSize = textView.paint.measureText(label)
-        Log.d("JHTEST", "textWidthSize: $textWidthSize")
+        // Log.d("JHTEST", "textWidthSize: $textWidthSize")
         val frameWidthSize = (layoutParams.width - paddingLeft - paddingRight) * 0.9
-        Log.d("JHTEST", "frameWidthSize: $frameWidthSize")
+        // Log.d("JHTEST", "frameWidthSize: $frameWidthSize")
 
         if (textWidthSize > frameWidthSize) {
             textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, (frameWidthSize / textWidthSize * textView.paint.textSize).toFloat())
@@ -98,7 +98,7 @@ class FlipCardLayout private constructor(context: Context,
 
     fun rename(label: String) {
         val newFile = File(file.parent, file.name.replace(getLabel(), label))
-        Log.d("JHTESTRENAME", newFile.absolutePath)
+        // Log.d("JHTESTRENAME", newFile.absolutePath)
         file.renameTo(newFile)
         file = newFile
         setText(label)
