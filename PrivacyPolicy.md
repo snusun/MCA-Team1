@@ -22,9 +22,16 @@ All user provided data can be deleted by uninstalling our application from your 
 If you would like to update/delete specific user provided data (example: delete some images), you may do so directly withing the application by editing or removing the specific images.
 
 ## Children
-Our application is directed at children for entertainent and education purposes only. Our collection of personal information on our application is intended to follow the principles of the Children's Online Privacy Protection Act ("COPPA").
-We will obtain parental consent (TODO: implement this at the beginning) before asking for any user provided information, unless the request for information falls within an exception that would be permitted under COPPA.
-We do not make any information collected from childre publicly available (all data are stored only locally on the user's device), nor do we enable children to do so. We will not condition a child's participation in any activity or service on the disclosure or more personal information than is reasonaly necessary to use our application.
+Our application is directed at children for entertainent and education purposes only. We comply to the following requirements of the [Families Policy](https://support.google.com/googleplay/android-developer/answer/9893335#families-policy):
+- App Content: Our application does not contain any age-sensitive information, as it simply uses the images taken by the device's camera the user is using to run the application. 
+- App functionality: Our application does not lead, nor drive users to another website or application. We do not provide a webview of an external website.
+- Ads: Our application does not display any kind of ads.
+- Data practices: As mentioned above in other sections, our application uses the user's device's camera, and saves the images taken by the said camera. Before using the device's camera, we make sure that we obtain the user's consent. Additionally, before obtaining the user's consent to the device's camera, we obtain parental consent to make sure the usage is under parental control in the case the user is a child. We do not make any information collected (saved on device) from children publicly available (all data are stored only locally on the user's device). We do not share any information collected to other thrid-parties. We will not condition a child's participation in any activity or service on the disclosure or more personal information than is reasonaly necessary to use our application.
+- APIs and SDKs: 
+Our collection of personal information on our application is intended to follow the principles of the [Children's Online Privacy Protection Act](https://www.ftc.gov/business-guidance/privacy-security/childrens-privacy) ("COPPA"), [E.U. General Data Protection Regulation](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679) ("GDPR"), and any other applicable laws or regulations.
+
+
+
 Parents may contact us at hscornelia999@gmail.com to question about privacy policies regarding their children.
 
 ## Security
