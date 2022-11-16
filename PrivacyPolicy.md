@@ -23,14 +23,14 @@ If you would like to update/delete specific user provided data (example: delete 
 
 ## Children
 Our application is directed at children for entertainent and education purposes only. We comply to the following requirements of the [Families Policy](https://support.google.com/googleplay/android-developer/answer/9893335#families-policy):
-- App Content: Our application does not contain any age-sensitive information, as it simply uses the images taken by the device's camera the user is using to run the application. 
-- App functionality: Our application does not lead, nor drive users to another website or application. We do not provide a webview of an external website.
-- Ads: Our application does not display any kind of ads.
-- Data practices: As mentioned above in other sections, our application uses the user's device's camera, and saves the images taken by the said camera. Before using the device's camera, we make sure that we obtain the user's consent. Additionally, before obtaining the user's consent to the device's camera, we obtain parental consent to make sure the usage is under parental control in the case the user is a child. We do not make any information collected (saved on device) from children publicly available (all data are stored only locally on the user's device). We do not share any information collected to other thrid-parties. We will not condition a child's participation in any activity or service on the disclosure or more personal information than is reasonaly necessary to use our application.
-- APIs and SDKs: 
-Our collection of personal information on our application is intended to follow the principles of the [Children's Online Privacy Protection Act](https://www.ftc.gov/business-guidance/privacy-security/childrens-privacy) ("COPPA"), [E.U. General Data Protection Regulation](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679) ("GDPR"), and any other applicable laws or regulations.
-
-
+- **App Content**: Our application does not contain any age-sensitive information, as it simply uses the images taken by the device's camera the user is using to run the application. 
+- **App functionality**: Our application does not lead, nor drive users to another website or application. We do not provide a webview of an external website.
+- **Ads**: Our application does not display any kind of ads.
+- **Data practices**: As mentioned above in other sections, our application uses the user's device's camera, and saves the images taken by the said camera. Before using the device's camera, we make sure that we obtain the user's consent. Additionally, before obtaining the user's consent to the device's camera, we obtain parental consent to make sure the usage is under parental control in the case the user is a child. We do not make any information collected (saved on device) from children publicly available (all data are stored only locally on the user's device). We do not share any information collected to other thrid-parties. We will not condition a child's participation in any activity or service on the disclosure or more personal information than is reasonaly necessary to use our application. The processing of the collected images are done using a DNN model, obtained from the [TensorflowLite Hub](https://tfhub.dev/google/lite-model/object_detection/mobile_object_labeler_v1/1). The model is saved on-device, and does not collect, store nor share information obtained from the images. 
+- **APIs and SDKs**: Our application uses the Android API level 31, and targets the SDK version 30. These are basic API/SDKs used in all Android-based applications.
+- **AR (Augmented Reality)**: Our application does not provide any AR-designed services.
+- **Social Apps & Features**: Our application does not allows users to share or exchange information.
+- **Legal compliance**: Our usage of personal information (images taken by device's camera) on our application is intended to follow the principles of the [Children's Online Privacy Protection Act](https://www.ftc.gov/business-guidance/privacy-security/childrens-privacy) ("COPPA"), [E.U. General Data Protection Regulation](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679) ("GDPR"), and any other applicable laws or regulations.
 
 Parents may contact us at hscornelia999@gmail.com to question about privacy policies regarding their children.
 
