@@ -22,7 +22,7 @@ All user provided data can be deleted by uninstalling our application from your 
 If you would like to update/delete specific user provided data (example: delete some images), you may do so directly withing the application by editing or removing the specific images.
 
 ## Children
-Our application is directed at children for entertainent and education purposes only. We comply to the following requirements of the [Families Policy](https://support.google.com/googleplay/android-developer/answer/9893335#families-policy):
+While our application is mainly directed to caregivers and parents, we acknowledge that it may appeal to children. In this matter, we assure parents that our application is for entertainent and education purposes only and that we comply to the following requirements of the [Families Policy](https://support.google.com/googleplay/android-developer/answer/9893335#families-policy):
 - **App Content**: Our application does not contain any age-sensitive information, as it simply uses the images taken by the device's camera the user is using to run the application. 
 - **App functionality**: Our application does not lead, nor drive users to another website or application. We do not provide a webview of an external website.
 - **Ads**: Our application does not display any kind of ads.
